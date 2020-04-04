@@ -1,0 +1,1 @@
+from mnmt.inputter.data_container import DataContainer

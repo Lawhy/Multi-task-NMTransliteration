@@ -1,0 +1,73 @@
+from torchtext.data import Field, TabularDataset
+
+
+class DataContainer:
+    """A simple data container that utilises the Torchtext package,
+       saving the train, valid and test data in TabularDataset
+    Args:
+        train_data_path (str)
+        valid_data_path (str)
+        test_data_path (str)
+    """
+    
+    def __init__(self, train_data_path, valid_data_path, test_data_path, 
+                 field_names=["en", "ch", "pinyin_str", "pinyin_char"]):
+        
+        # default field names are used for English-to-Chinese Transliteration
+        self.field_names = field_names
+        # important that the order of tsv's columns is the same as in field_names
+        self.fields = []
+        print("Loading the Dataset into the container...")
+        for name in field_names:
+            self.fields.append((name, self.create_field()))  # modify this line if more requirement on Field
+        self.dataset = {
+            "train": self.create_dataset(train_data_path, self.fields),
+            "valid": self.create_dataset(valid_data_path, self.fields),
+            "test": self.create_dataset(test_data_path, self.fields)
+        }
+        print("Field names: {}".format(self.field_names))
+        print("Data sizes: [(Train, {}), (Valid, {}), (Test, {})]".format(self.size(self.dataset["train"]),
+                                                                    self.size(self.dataset["valid"]),
+                                                                    self.size(self.dataset["test"])))
+        self.show_train_examples()
+    
+    @staticmethod
+    def tokenize(word): 
+        """The default tokenization method used for the tsv data"""
+        
+        word = word.replace('\n', '')
+        return word.split(' ')
+    
+    @staticmethod
+    def size(data_split):
+        """Simple function that computes the size of the data split"""
+        
+        return len(data_split.examples)
+    
+    @classmethod
+    def create_field(cls, tokenize=None, lower=True):
+        
+        if not tokenize:
+            tokenize = cls.tokenize  # the default tokenization method
+            
+        return Field(tokenize=cls.tokenize, 
+                     init_token='<sos>', 
+                     eos_token='<eos>', 
+                     lower=lower,
+                     include_lengths = True)
+    
+    @classmethod
+    def create_dataset(cls, data_path, fields):
+        
+        return TabularDataset(path = data_path, 
+                              format='tsv',
+                              skip_header=True, 
+                              fields=fields)
+    
+    def show_train_examples(self):
+        """Present the first example for each data split"""
+        
+        print("The first example of the training data is:\n {}".format(vars(self.dataset["train"].examples[0])))
+        # print("The first example of the valid data is:\n {}".format(vars(self.dataset["valid"].examples[0])))
+        # print("The first example of the test data is:\n {}".format(vars(self.dataset["test"].examples[0])))
+                              
