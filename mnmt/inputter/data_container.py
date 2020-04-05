@@ -67,7 +67,7 @@ class DataContainer:
     def show_train_examples(self):
         """Present the first example for each data split"""
         
-        print("The first example of the training data is:\n {}".format(vars(self.dataset["train"].examples[0])))
-        # print("The first example of the valid data is:\n {}".format(vars(self.dataset["valid"].examples[0])))
-        # print("The first example of the test data is:\n {}".format(vars(self.dataset["test"].examples[0])))
-                              
+        print("The first example of the training data is:")
+        first_example = vars(self.dataset["train"].examples[0])
+        for k, v in first_example.items():
+            print(k, ": ", v)

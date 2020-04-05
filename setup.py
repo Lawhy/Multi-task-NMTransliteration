@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="multi-task-nmt-lawhy",
-    version="0.0.5",
+    version="0.0.8",
     author="Yuan (Lawrence) He",
     author_email="lawhy0729@gmail.com",
     description="Pytorch Implementation of the Multi-task Neural Machine Transliteration System",
@@ -13,6 +13,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/Lawhy/Multi-task-NMT",
     packages=setuptools.find_packages(),
+    package_data={
+        "": ["*.tsv", "*.json"]
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
