@@ -9,6 +9,7 @@ from mnmt.inputter import ArgsFeeder
 from mnmt.inputter import ModuleArgsFeeder
 from mnmt.trainer.utils import *
 from mnmt.trainer import Trainer
+import sys
 
 
 def set_up_args(data_container):
@@ -56,4 +57,7 @@ if __name__ == '__main__':
     seq2seq_args_feeder = set_up_args(dict_dataset)
     test_model = test_seq2seq(seq2seq_args_feeder)
     test_trainer = Trainer(seq2seq_args_feeder, test_model)
-    test_trainer.run(burning_epoch=10)
+    f = open("test_out.txt", 'w')
+    sys.stdout = f
+    test_trainer.run(burning_epoch=30)
+    f.close()
