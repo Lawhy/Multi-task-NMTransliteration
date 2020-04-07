@@ -260,7 +260,7 @@ class Trainer:
             # print every ${report_interval} batches (${report_interval} steps)
             if i % self.train_memory_bank.report_interval == self.train_memory_bank.report_interval - 1:
 
-                lr = self.args_feeder.learning_rate
+                lr = -1
                 for param_group in self.optimizer.param_groups:
                     lr = param_group['lr']
                 n_examples = len(self.data_container.dataset['train'].examples)
@@ -287,6 +287,8 @@ class Trainer:
                     self.model.train()
 
         return epoch_loss / len(self.train_iter)
+
+
 
     @staticmethod
     def matching(pred, ref, trg_field):
