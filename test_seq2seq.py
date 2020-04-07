@@ -45,7 +45,7 @@ def test_seq2seq(args_feeder):
                                decoder_hidden_dim=args_feeder.decoder_args_feeder.hidden_dim,
                                num_of_states=2)
     decoder = GreedyDecoder(feed_forward_decoder, bridge_layer, device=args_feeder.device)
-    model = Seq2Seq(args_feeder, encoder, decoder, teacher_forcing_ratio=0.8)
+    model = Seq2Seq(args_feeder, encoder, decoder, teacher_forcing_ratio=0.8).to(args_feeder.device)
     print(model.apply(init_weights))
     count_parameters(model)
     return model
