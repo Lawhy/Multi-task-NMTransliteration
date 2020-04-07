@@ -57,7 +57,5 @@ if __name__ == '__main__':
     seq2seq_args_feeder = set_up_args(dict_dataset)
     test_model = test_seq2seq(seq2seq_args_feeder)
     test_trainer = Trainer(seq2seq_args_feeder, test_model)
-    f = open("test_out.txt", 'w')
-    sys.stdout = f
     test_trainer.run(burning_epoch=30)
-    f.close()
+
