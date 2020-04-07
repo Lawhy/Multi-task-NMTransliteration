@@ -22,7 +22,7 @@ class BasicEncoder(nn.Module):
             src: [src_length, batch_size], source inputs in a batch
             src_lens: [batch_size], source input length for each sample in the batch
         """
-        assert src.size(1) == src_lens.size()  # should all be batch_size
+        assert src.size(1) == src_lens.size(0)  # should all be batch_size
 
         src_embedding = self.embedding(src)  # [src_length, batch_size, embedding_dim]
         src_embedding_packed = nn.utils.rnn.pack_padded_sequence(src_embedding, src_lens)
@@ -58,9 +58,9 @@ class BasicEncoder(nn.Module):
             assert self.encoder_args_feeder.rnn_type == "LSTM"
             final_state = (torch.cat((h_n[0][-2, :, :], h_n[0][-1, :, :]), dim=1),
                            torch.cat((h_n[1][-2, :, :], h_n[1][-1, :, :]), dim=1))
-            assert final_state[0].size() == (batch_size, hidden_dim * 2)  # check hidden state
-            assert final_state[1].size(1) == (batch_size, hidden_dim * 2)  # check cell state
+            assert final_state[0].shape == (batch_size, hidden_dim * 2)  # check hidden state
+            assert final_state[1].shape == (batch_size, hidden_dim * 2)  # check cell state
         else:
             final_state = torch.cat((h_n[-2, :, :], h_n[-1, :, :]), dim=1)
-            assert final_state.size() == (batch_size, hidden_dim * 2)  # check hidden state
+            assert final_state.shape == (batch_size, hidden_dim * 2)  # check hidden state
         return final_state

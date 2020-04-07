@@ -16,7 +16,7 @@ class BasicFeedForwardDecoder(nn.Module):
         self.attrs = args_feeder.decoder_args_feeder  # decoder's attributes
         self.attention = attention
         self.embedding = self.attrs.basic_embedding()
-        rnn_input_dim = self.attrs.embedding_dim + self.attrs.hidden_dim
+        rnn_input_dim = self.attrs.embedding_dim + (args_feeder.encoder_args_feeder.hidden_dim * 2)
         self.rnn = self.attrs.basic_rnn(in_dim=rnn_input_dim,
                                         hidden_dim=self.attrs.hidden_dim,
                                         bidirectional=False)
@@ -58,7 +58,7 @@ class BasicFeedForwardDecoder(nn.Module):
 
         # make prediction [y_t, attn_t, s_t] -> y_{t+1}
         y_t_plus_1_hat = self.prediction(
-            torch.cat((rnn_output, context, y_t), dim=1))  # [batch_size, target_input_dim]
+            torch.cat((y_t, context, s_t), dim=1))  # [batch_size, target_input_dim]
 
         # concat decoder hidden and cell state for LSTM
         if isinstance(s_t_minus_1, tuple):

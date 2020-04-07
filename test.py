@@ -7,7 +7,7 @@ print(device)
 
 
 def test_datasets():
-    return generate_batch_iterators(DICT['dataset'], 64, device)
+    return generate_batch_iterators(DICT['data_container'], 64, device)
 
 
 if __name__ == "__main__":

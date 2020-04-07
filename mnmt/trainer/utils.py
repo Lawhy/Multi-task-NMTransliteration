@@ -13,8 +13,6 @@ def set_reproducibility(seed=1234):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
 
 
 def build_vocabs(data_container: DataContainer, dict_min_freqs: dict):

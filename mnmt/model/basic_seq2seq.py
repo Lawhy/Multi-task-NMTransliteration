@@ -18,5 +18,5 @@ class Seq2Seq(nn.Module):
     def forward(self, src, src_lens, trg):
         encoder_outputs, encoder_final_state = self.encoder(src, src_lens)
         mask = create_mask(src, self.args_feeder.src_pad_idx)
-        prediction = self.decoder(trg, encoder_outputs, encoder_final_state, mask)
+        prediction = self.decoder(trg, encoder_outputs, encoder_final_state, mask, self.teacher_forcing_ratio)
         return prediction

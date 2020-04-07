@@ -33,9 +33,9 @@ class GreedyDecoder(BasicDecoder):
             # we use the same subscript t for y and s here because y starts from 1, s starts from 0
             y_hat_t, s_t, _ = self.feed_forward_decoder(y_hat_t, s_t, encoder_outputs, mask)
             y_hat[t] = y_hat_t
-            assert y_hat_t.size() == trg[t].size()
             # greedy strategy as only top1 prediction considered
-            teacher_force = random.random() < self.teacher_forcing_ratio
+            teacher_force = random.random() < teacher_forcing_ratio
             y_hat_t = trg[t] if teacher_force else y_hat_t.argmax(1)
+            assert y_hat_t.size() == trg[t].size()
 
         return y_hat

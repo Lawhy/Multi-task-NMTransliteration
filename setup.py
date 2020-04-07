@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="multi-task-nmt-lawhy",
-    version="0.0.8",
+    version="0.0.9",
     author="Yuan (Lawrence) He",
     author_email="lawhy0729@gmail.com",
     description="Pytorch Implementation of the Multi-task Neural Machine Transliteration System",
