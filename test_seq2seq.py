@@ -9,7 +9,6 @@ from mnmt.inputter import ArgsFeeder
 from mnmt.inputter import ModuleArgsFeeder
 from mnmt.trainer.utils import *
 from mnmt.trainer import Trainer
-import sys
 
 
 def set_up_args(data_container):
@@ -31,9 +30,9 @@ def set_up_args(data_container):
     return ArgsFeeder(enc_args_feeder, dec_args_feeder,
                       batch_size=64, src_pad_idx=src_pad_idx, trg_pad_idx=trg_pad_idx,
                       optim_choice='Adam', learning_rate=0.003, decay_patience=0,
-                      lr_decay_factor=0.9, valid_criterion='ACC', early_stopping_patience=10,
-                      total_epochs=50, report_interval=50, exp_num=1, multi_task_ratio=1, data_container=data_container,
-                      src_lang='en', trg_lang='ch', auxiliary_name='pinyin_str')
+                      lr_decay_factor=0.9, valid_criterion='ACC', early_stopping_patience=1000,
+                      total_epochs=100, report_interval=50, exp_num=1, multi_task_ratio=1, data_container=data_container,
+                      src_lang='en', trg_lang='ch', auxiliary_name='pinyin_str', quiet_translate=True)
 
 
 def test_seq2seq(args_feeder):
@@ -53,9 +52,9 @@ def test_seq2seq(args_feeder):
 
 
 if __name__ == '__main__':
+    set_reproducibility(seed=1234)
     dict_dataset = DICT['data_container']
     seq2seq_args_feeder = set_up_args(dict_dataset)
     test_model = test_seq2seq(seq2seq_args_feeder)
     test_trainer = Trainer(seq2seq_args_feeder, test_model)
-    test_trainer.run(burning_epoch=30)
-
+    test_trainer.run(burning_epoch=0)
