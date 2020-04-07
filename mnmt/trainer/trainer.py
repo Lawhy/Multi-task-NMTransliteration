@@ -128,6 +128,8 @@ class Trainer:
                 if self.task is "Multi":
                     self.update_aux(valid_acc_aux)
 
+                self.scheduler.step(valid_acc)  # update learning rate
+
                 print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
                 print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
                 print(f'\t Val. Loss: {valid_loss:.3f} | '
