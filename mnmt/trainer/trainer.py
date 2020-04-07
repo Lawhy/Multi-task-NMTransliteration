@@ -125,7 +125,7 @@ class Trainer:
                 epoch_mins, epoch_secs = self.epoch_time(start_time, end_time)
 
                 self.update(valid_loss, valid_acc)
-                if self.task is "Multi":
+                if self.task == "Multi":
                     self.update_aux(valid_acc_aux)
 
                 self.scheduler.step(valid_acc)  # update learning rate
@@ -213,12 +213,23 @@ class Trainer:
 
     def construct_loss_function(self):
         loss_criterion = nn.CrossEntropyLoss(ignore_index=self.args_feeder.trg_pad_idx)
-        if self.task is "Multi":
-            return lambda output, trg, output_aux, trg_aux: \
+        if self.task == "Multi":
+            return lambda output, output_aux, trg, trg_aux: \
                 (self.multi_task_ratio * loss_criterion(output, trg)) + \
                 ((1 - self.multi_task_ratio) * loss_criterion(output_aux, trg_aux))
         else:
             return loss_criterion
+
+    def compute_loss(self, output, trg):
+        if isinstance(output, tuple) and isinstance(trg, tuple):
+            assert self.task == "Multi"
+            output, output_aux, trg, trg_aux = output[0], output[1], trg[0], trg[1]
+            output, trg = self.fix_output_n_trg(output, trg)
+            output_aux, trg_aux = self.fix_output_n_trg(output_aux, trg_aux)
+            return self.loss_function(output, output_aux, trg, trg_aux)
+        else:
+            output, trg = self.fix_output_n_trg(output, trg)
+            return self.loss_function(output, trg)
 
     def train(self):
 
@@ -232,23 +243,16 @@ class Trainer:
 
             src, src_lens = getattr(batch, self.args_feeder.src_lang)
             trg, trg_lens = getattr(batch, self.args_feeder.trg_lang)
-            trg_aux, trg_lens_aux = None, None
 
             self.optimizer.zero_grad()
 
-            if self.task is 'Multi':
+            if self.task == 'Multi':
                 trg_aux, trg_lens_aux = getattr(batch, self.args_feeder.auxiliary_name)
                 output, output_aux = self.model(src, src_lens, trg, trg_aux)
+                loss = self.compute_loss((output, output_aux), (trg, trg_aux))
             else:
-                output, output_aux = self.model(src, src_lens, trg), None
-
-            output, trg = self.fix_output_n_trg(output, trg)
-
-            if self.task is 'Multi':
-                output_aux, trg_aux = self.fix_output_n_trg(output_aux, trg_aux)
-                loss = self.loss_function(output, trg, output_aux, trg_aux)
-            else:
-                loss = self.loss_function(output, trg)
+                output = self.model(src, src_lens, trg)
+                loss = self.compute_loss(output, trg)
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1)  # clip = 1
@@ -283,7 +287,7 @@ class Trainer:
                     self.evaluate(is_test=True)
 
                     self.update(valid_loss, valid_acc)
-                    if self.task is 'Multi':
+                    if self.task == 'Multi':
                         self.update_aux(valid_acc_aux)
                     self.scheduler.step(valid_acc)  # scheduled on validation acc
                     self.model.train()
@@ -291,7 +295,7 @@ class Trainer:
         return epoch_loss / len(self.train_iter)
 
     @staticmethod
-    def matching(pred, ref, trg_field):
+    def matching(pred, ref, trg_field, quiet_translate):
         tally = 0
         for j in range(pred.shape[0]):
 
@@ -315,11 +319,28 @@ class Trainer:
                     ref_j_toks.append(tok)
             ref_j = ''.join(ref_j_toks)
 
+            if not quiet_translate:
+                print("Pred: {} | Ref: {}".format(pred_j, ref_j))
+
             if pred_j == ref_j:
                 tally += 1
         return tally
 
-    def evaluate(self, is_test=False):
+    def greedy_translate(self, output, trg, trg_field):
+        pred = output[1:].argmax(2).permute(1, 0)  # [batch_size, trg_length - 1]
+        ref = trg[1:].permute(1, 0)  # [batch_size, trg_length - 1]
+        return self.matching(pred, ref, trg_field=trg_field, quiet_translate=self.args_feeder.quiet_translate)
+
+    def beam_translate(self, output, trg, trg_field):
+        ...
+
+    def translate(self, output, trg, trg_field, beam=1):
+        if beam == 1:
+            return self.greedy_translate(output, trg, trg_field)
+        else:
+            ...
+
+    def evaluate(self, is_test=False, beam=1):
 
         self.model.eval()
         self.model.teacher_forcing_ratio = 0  # turn off teacher forcing
@@ -336,37 +357,16 @@ class Trainer:
 
                 src, src_lens = getattr(batch, self.args_feeder.src_lang)
                 trg, trg_lens = getattr(batch, self.args_feeder.trg_lang)
-                trg_aux, trg_lens_aux = None, None
 
-                if self.task is 'Multi':
+                if self.task == 'Multi':
                     trg_aux, trg_lens_aux = getattr(batch, self.args_feeder.auxiliary_name)
                     output, output_aux = self.model(src, src_lens, trg, trg_aux)
+                    loss = self.compute_loss((output, output_aux), (trg, trg_aux))
+                    correct_aux += self.translate(output_aux, trg_aux, trg_field=self.auxiliary_field, beam=beam)
                 else:
-                    output, output_aux = self.model(src, src_lens, trg), None
-
-                # ---------compute acc START----------
-                pred = output[1:].argmax(2).permute(1, 0)  # [batch_size, trg_len]
-                ref = trg[1:].permute(1, 0)
-                correct += self.matching(pred, ref, trg_field=self.trg_field)  # match each sample
-                # ---------compute acc END----------
-
-                # ---------compute acc Pinyin START----------
-                if self.task is "Multi":
-                    pred_aux = output_aux[1:].argmax(2).permute(1, 0)  # [batch_size, pinyin_len]
-                    ref_aux = trg_aux[1:].permute(1, 0)
-                    correct_aux += self.matching(pred_aux, ref_aux,
-                                                 trg_field=self.auxiliary_field)
-                # ---------compute acc Pinyin END----------
-
-                # ---------compute loss START----------
-                output, trg = self.fix_output_n_trg(output, trg)
-
-                if self.task is 'Multi':
-                    output_aux, trg_aux = self.fix_output_n_trg(output_aux, trg_aux)
-                    loss = self.loss_function(output, trg, output_aux, trg_aux)
-                else:
-                    loss = self.loss_function(output, trg)
-                # ---------compute loss END----------
+                    output = self.model(src, src_lens, trg)
+                    loss = self.compute_loss(output, trg)
+                correct += self.translate(output, trg, trg_field=self.trg_field, beam=beam)
 
                 epoch_loss += loss.item()
 
@@ -376,7 +376,7 @@ class Trainer:
                 else len(self.data_container.dataset['test'].examples)
 
             print('The number of correct predictions (main-task): {}'.format(correct))
-            if self.task is 'Multi':
+            if self.task == 'Multi':
                 print('The number of correct predictions (auxiliary-task): {}'.format(correct_aux))
 
             acc = correct / n_examples

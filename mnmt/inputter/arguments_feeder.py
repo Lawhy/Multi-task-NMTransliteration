@@ -13,28 +13,30 @@ class ArgsFeeder:
                  early_stopping_patience: int,
                  total_epochs: int, report_interval: int, exp_num: int,
                  multi_task_ratio,
-                 data_container, src_lang, trg_lang, auxiliary_name=None):
+                 data_container, src_lang, trg_lang, auxiliary_name=None,
+                 quiet_translate=True):
         """
         Args:
             encoder_args_feeder (ModuleArgsFeeder):
             decoder_args_feeder (ModuleArgsFeeder):
-            batch_size: number of samples in a batch
-            src_pad_idx:
-            trg_pad_idx:
-            optim_choice: "Adam", "SGD", etc.
-            learning_rate:
-            decay_patience:
-            lr_decay_factor:
-            valid_criterion: "ACC" or "LOSS"
-            early_stopping_patience:
-            total_epochs:
-            report_interval:
-            exp_num:
+            batch_size (int): number of samples in a batch
+            src_pad_idx (int):
+            trg_pad_idx (int):
+            optim_choice (str): "Adam", "SGD", etc.
+            learning_rate (float):
+            decay_patience (int):
+            lr_decay_factor (float):
+            valid_criterion (str): "ACC" or "LOSS"
+            early_stopping_patience (int):
+            total_epochs (int):
+            report_interval (int):
+            exp_num (int):
             multi_task_ratio:
             data_container:
             src_lang:
             trg_lang:
             auxiliary_name:
+            quiet_translate:
         """
         self.encoder_args_feeder = encoder_args_feeder
         self.decoder_args_feeder = decoder_args_feeder
@@ -60,6 +62,7 @@ class ArgsFeeder:
         self.src_lang = src_lang
         self.trg_lang = trg_lang
         self.auxiliary_name = auxiliary_name
+        self.quiet_translate = quiet_translate
 
 
 
