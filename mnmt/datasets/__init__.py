@@ -10,7 +10,7 @@ train = data_path + "/dict_data/train.tsv"
 valid = data_path + "/dict_data/valid.tsv"
 test = data_path + "/dict_data/test.tsv"
 dict_data = DataContainer(train, valid, test)
-DICT = {"dataset": dict_data}
+DICT = {"name": 'DICT', "dataset": dict_data}
 print("####################################")
 
 # Import the NEWS dataset
@@ -23,7 +23,8 @@ news_data = DataContainer(train, valid, test)
 with open(data_path + '/news_data/test.json', 'r') as f:
     test_json = json.load(f)
 print("Load extra json file for the test set which contains multiple references.")
-NEWS = {"dataset": news_data,
+NEWS = {"name": 'NEWS',
+        "dataset": news_data,
         "test-set-dict": test_json}
 print("####################################")
 

@@ -124,3 +124,7 @@ dmypy.json
 
 # don't update RNN models to github
 *.pt
+
+# file: ~/.gitignore_global
+.DS_Store
+.idea
