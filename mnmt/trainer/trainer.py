@@ -354,10 +354,10 @@ class Trainer:
         # evaluate val set
         f = open(self.args_feeder.valid_out_path, 'w')
         f.write("PRED\tREF\n")
-        self.evaluate(output_file=f)
+        self.evaluate(is_test=False, output_file=f)
         f.close()
         # evaluate tst set
         f = open(self.args_feeder.test_out_path, 'w')
         f.write("PRED\tREF\n")
-        self.evaluate(output_file=f)
+        self.evaluate(is_test=True, output_file=f)
         f.close()
