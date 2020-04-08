@@ -348,3 +348,16 @@ class Trainer:
     def load_best_model(self):
         self.model.load_state_dict(torch.load('experiments/exp' +
                                               str(self.args_feeder.exp_num) + '/acc-model-seq2seq.pt'))
+
+    def best_model_output(self):
+        self.load_best_model()
+        # evaluate val set
+        f = open(self.args_feeder.valid_out_path, 'w')
+        f.write("PRED\tREF\n")
+        self.evaluate(output_file=f)
+        f.close()
+        # evaluate tst set
+        f = open(self.args_feeder.test_out_path, 'w')
+        f.write("PRED\tREF\n")
+        self.evaluate(output_file=f)
+        f.close()
