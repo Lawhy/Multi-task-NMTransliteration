@@ -415,6 +415,7 @@ class Trainer:
             test_srcs = []
             for i, batch in enumerate(self.test_iter):
                 src, src_lens = getattr(batch, self.args_feeder.src_lang)
+                src = src[1:].permute(1, 0)
                 for j in range(src.shape[0]):
                     src_j = src[j, :]
                     src_j_toks = []
@@ -425,8 +426,6 @@ class Trainer:
                         else:
                             src_j_toks.append(tok)
                     test_srcs.append(''.join(src_j_toks))
-            print(test_srcs)
-            print(len(test_srcs))
             test_out_df['SRC'] = test_srcs
             print(test_out_df)
             count = 0
