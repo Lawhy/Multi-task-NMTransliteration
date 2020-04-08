@@ -417,8 +417,8 @@ class Trainer:
             count = 0
             for i, dp in test_out_df.iterrows():
                 test_example = vars(self.data_container.dataset['test'].examples[i])
-                test_src = test_example[self.args_feeder.src_lang].replace(" ", "")
-                test_trg = test_example[self.args_feeder.trg_lang].replace(" ", "")
+                test_src = "".join(test_example[self.args_feeder.src_lang])
+                test_trg = "".join(test_example[self.args_feeder.trg_lang])
                 assert test_trg == dp["REF"]
                 if dp["PRED"] in test_ref_dict[test_src]:
                     count += 1
