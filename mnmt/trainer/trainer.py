@@ -412,11 +412,11 @@ class Trainer:
             eval_results["Replaced"] = [results_valid["replaced"], results_test["replaced"]]
         if test_ref_dict is not None:
             test_out_df = pd.read_csv(self.args_feeder.test_out_path, sep='\t')
-            assert len(test_out_df) == len(self.data_container['test'].examples)
+            assert len(test_out_df) == len(self.data_container.dataset['test'].examples)
             assert len(test_out_df) == len(test_ref_dict)
             count = 0
             for i, dp in test_out_df.iterrows():
-                test_example = vars(self.data_container['test'].examples[i])
+                test_example = vars(self.data_container.dataset['test'].examples[i])
                 test_src = test_example[self.args_feeder.src_lang].replace(" ", "")
                 test_trg = test_example[self.args_feeder.trg_lang].replace(" ", "")
                 assert test_trg == dp["REF"]
