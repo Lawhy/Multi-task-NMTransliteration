@@ -38,9 +38,9 @@ class AlternatingCharacterTable:
 
         # extract those with MED 1 or 2 and look up the ACT
         for_act = df[(dist > 0) & (dist <= 2)]
-        print('The number of pred/ref pairs with MED of 1 or 2 is', len(for_act))
+        # print('The number of pred/ref pairs with MED of 1 or 2 is', len(for_act))
         correct_act = np.sum(for_act.apply(lambda x: self.look_up_ACT(x['PRED'], x['REF']), axis=1))
-        print('The number of replaceable names is', correct_act)
+        # print('The number of replaceable names is', correct_act)
         acc_act = (correct + correct_act) / n
 
         return {
