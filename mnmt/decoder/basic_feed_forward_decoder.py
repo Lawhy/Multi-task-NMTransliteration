@@ -5,15 +5,17 @@ import torch.nn as nn
 
 class BasicFeedForwardDecoder(nn.Module):
     """Single-step Decoder"""
-    def __init__(self, args_feeder: ArgsFeeder, attention):
+    def __init__(self, args_feeder: ArgsFeeder, attention, decoder_index=0):
         """
         Args:
-            args_feeder (ArgsFeeder): the general arguments feeder for the entire model
+            args_feeder (ArgsFeeder): the general arguments feeder for the
+                entire model
             attention: Attention instance
+            decoder_index: indicate which decoder argument to use
         """
         super().__init__()
 
-        self.attrs = args_feeder.decoder_args_feeder  # decoder's attributes
+        self.attrs = args_feeder.decoder_args_feeders[decoder_index]  # decoder's attributes
         self.attention = attention
         self.embedding = self.attrs.basic_embedding()
         rnn_input_dim = self.attrs.embedding_dim + (args_feeder.encoder_args_feeder.hidden_dim * 2)
@@ -28,9 +30,10 @@ class BasicFeedForwardDecoder(nn.Module):
 
     def forward(self, y_t, s_t_minus_1, encoder_outputs, mask):
         """s_t = Decoder(d(y_t), w_t, s_{t-1}) decoder hidden state for time t
-           y_t_plus_1_hat = f(d(y_t), w_t, s_t) decoder output for time t
+            y_t_plus_1_hat = f(d(y_t), w_t, s_t) decoder output for time t
+
         Args:
-            y_t: [batch_size]  target one-hot embedding for time step t
+            y_t: [batch_size] target one-hot embedding for time step t
             s_t_minus_1: [batch_size, hidden_dim] or tuple if LSTM
             encoder_outputs: [src_length, batch_size, encoder_hidden_dim * 2]
             mask: [batch_size, src_length]
