@@ -215,6 +215,7 @@ class Trainer:
 
     def update_aux(self, valid_acc_aux):
         if valid_acc_aux >= self.eval_memory_bank.best_valid_acc_aux:
+            self.eval_memory_bank.best_valid_acc_aux = valid_acc_aux
             log_print(self.train_log_path, '\t\t Better Valid Acc on Auxiliary Task! (at least equal)')
         log_print(self.train_log_path, f'\tBEST. Val. Acc Aux: {self.eval_memory_bank.best_valid_acc_aux}')
 
