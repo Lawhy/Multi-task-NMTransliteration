@@ -2,11 +2,13 @@ from mnmt.inputter import ArgsFeeder
 from mnmt.inputter import generate_batch_iterators
 from mnmt.inputter import DataContainer
 from mnmt.translator import Seq2SeqTranslator
+from mnmt.alternating_character_table import AlternatingCharacterTable
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import math
 import time
+import pandas as pd
 
 
 class Trainer:
@@ -349,15 +351,38 @@ class Trainer:
         self.model.load_state_dict(torch.load('experiments/exp' +
                                               str(self.args_feeder.exp_num) + '/acc-model-seq2seq.pt'))
 
-    def best_model_output(self):
+    def best_model_output(self, enable_acc_act=True, enable_acc_multi=False):
+
         self.load_best_model()
+
         # evaluate val set
         f = open(self.args_feeder.valid_out_path, 'w')
         f.write("PRED\tREF\n")
-        self.evaluate(is_test=False, output_file=f)
+        valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False, output_file=f)
         f.close()
+
         # evaluate tst set
         f = open(self.args_feeder.test_out_path, 'w')
         f.write("PRED\tREF\n")
-        self.evaluate(is_test=True, output_file=f)
+        test_loss, test_acc, test_acc_aux = self.evaluate(is_test=True, output_file=f)
         f.close()
+
+        # save evaluation results
+        eval_results = pd.DataFrame(columns=["Loss", "ACC"], index=["Valid", "Test"])
+        eval_results["Loss"] = [valid_loss, test_loss]
+        eval_results["ACC"] = [valid_acc, test_acc]
+        if self.task == 'Multi':
+            eval_results["ACC-aux"] = [valid_acc_aux, test_acc_aux]
+        if enable_acc_act:
+            act = AlternatingCharacterTable()
+            valid_out = act.tsv_to_df(self.args_feeder.valid_out_path)
+            test_out = act.tsv_to_df(self.args_feeder.test_out_path)
+            results_valid = act.compute_ACC_ACT(valid_out)
+            results_test = act.compute_ACC_ACT(test_out)
+            eval_results["ACC-ACT"] = [results_valid["acc-act"], results_test["acc-act"]]
+        if enable_acc_multi:
+            ...
+        print(eval_results)
+        eval_results.to_csv("eval.results", sep="\t")
+
+

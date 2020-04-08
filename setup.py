@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/Lawhy/Multi-task-NMT",
     packages=setuptools.find_packages(),
     package_data={
-        "": ["*.tsv", "*.json"]
+        "": ["*.tsv", "*.json", "*.xlsx"]
     },
     classifiers=[
         "Programming Language :: Python :: 3",
