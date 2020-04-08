@@ -305,8 +305,8 @@ class Trainer:
                 if (self.train_memory_bank.n_steps % (10 * self.train_memory_bank.report_interval)) == 0:
                     log_print(self.train_log_path, '-----Val------')
                     valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False)
-                    log_print(self.train_log_path, '-----Tst------')
-                    self.evaluate(is_test=True)
+                    # log_print(self.train_log_path, '-----Tst------')
+                    # self.evaluate(is_test=True)
 
                     self.update(valid_loss, valid_acc)
                     if self.task == 'Multi':
@@ -371,7 +371,7 @@ class Trainer:
         self.model.load_state_dict(torch.load('experiments/exp' +
                                               str(self.args_feeder.exp_num) + '/acc-model-seq2seq.pt'))
 
-    def best_model_output(self, enable_acc_act=True, enable_acc_multi=False):
+    def best_model_output(self, enable_acc_act=True, test_ref_dict=None):
 
         self.load_best_model()
 
@@ -410,7 +410,20 @@ class Trainer:
             results_test = act.compute_ACC_ACT(test_out)
             eval_results["ACC-ACT"] = [results_valid["acc-act"], results_test["acc-act"]]
             eval_results["Replaced"] = [results_valid["replaced"], results_test["replaced"]]
-        if enable_acc_multi:
-            ...
+        if test_ref_dict is not None:
+            test_out_df = pd.read_csv(self.args_feeder.test_out_path, sep='\t')
+            assert len(test_out_df) == len(self.data_container['test'].examples)
+            assert len(test_out_df) == len(test_ref_dict)
+            count = 0
+            for i, dp in test_out_df.iterrows():
+                test_example = vars(self.data_container['test'].examples[i])
+                test_src = test_example[self.args_feeder.src_lang].replace(" ", "")
+                test_trg = test_example[self.args_feeder.trg_lang].replace(" ", "")
+                assert test_trg == dp["REF"]
+                if dp["PRED"] in test_ref_dict[test_src]:
+                    count += 1
+            eval_results["ACC+"] = ["NA", count / len(test_out_df)]
         print(eval_results)
         eval_results.to_csv("experiments/exp" + str(self.args_feeder.exp_num) + "/eval.results", sep="\t")
+
+
