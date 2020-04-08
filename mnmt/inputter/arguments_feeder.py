@@ -1,12 +1,13 @@
 from mnmt.inputter import ModuleArgsFeeder
 import torch
+from typing import List
 
 
 class ArgsFeeder:
 
     def __init__(self,
                  encoder_args_feeder: ModuleArgsFeeder,
-                 decoder_args_feeder: ModuleArgsFeeder,
+                 decoder_args_feeder: List[ModuleArgsFeeder],
                  batch_size: int, src_pad_idx: int, trg_pad_idx: int,
                  optim_choice: str, learning_rate: float, decay_patience: int,
                  lr_decay_factor: float, valid_criterion: str,
@@ -18,7 +19,7 @@ class ArgsFeeder:
         """
         Args:
             encoder_args_feeder (ModuleArgsFeeder):
-            decoder_args_feeder (ModuleArgsFeeder):
+            decoder_args_feeder List[ModuleArgsFeeder]:
             batch_size (int): number of samples in a batch
             src_pad_idx (int):
             trg_pad_idx (int):
@@ -32,6 +33,8 @@ class ArgsFeeder:
             report_interval (int):
             exp_num (int):
             multi_task_ratio:
+            valid_out_path:
+            test_out_path:
             data_container:
             src_lang:
             trg_lang:

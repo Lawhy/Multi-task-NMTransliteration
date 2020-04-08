@@ -20,6 +20,6 @@ class Seq2MultiSeq(nn.Module):
     def forward(self, src, src_lens, *trg):
         encoder_outputs, encoder_final_state = self.encoder(src, src_lens)
         mask = create_mask(src, self.args_feeder.src_pad_idx)
-        predictions = [decoder(trg, encoder_outputs, encoder_final_state, mask,
-                               self.teacher_forcing_ratio) for decoder in self.decoder_list]
+        predictions = [self.decoder_list[i](trg[i], encoder_outputs, encoder_final_state, mask,
+                                            self.teacher_forcing_ratio) for i in range(len(self.decoder_list))]
         return tuple(predictions)
