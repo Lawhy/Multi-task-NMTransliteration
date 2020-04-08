@@ -350,3 +350,7 @@ class Trainer:
             print("[Eval End]: Current Teacher Forcing Ratio: {:.3f}".format(self.model.teacher_forcing_ratio))
 
         return epoch_loss, acc, acc_aux
+
+    def load_best_model(self):
+        self.model.load_state_dict(torch.load('experiments/exp' +
+                                              str(self.args_feeder.exp_num) + '/acc-model-seq2seq.pt'))
