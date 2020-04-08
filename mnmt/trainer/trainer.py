@@ -3,6 +3,7 @@ from mnmt.inputter import generate_batch_iterators
 from mnmt.inputter import DataContainer
 from mnmt.translator import Seq2SeqTranslator
 from mnmt.alternating_character_table import AlternatingCharacterTable
+from mnmt.alternating_character_table import dict_act_path
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -374,7 +375,7 @@ class Trainer:
         if self.task == 'Multi':
             eval_results["ACC-aux"] = [valid_acc_aux, test_acc_aux]
         if enable_acc_act:
-            act = AlternatingCharacterTable()
+            act = AlternatingCharacterTable(act_path=dict_act_path)
             valid_out = act.tsv_to_df(self.args_feeder.valid_out_path)
             test_out = act.tsv_to_df(self.args_feeder.test_out_path)
             results_valid = act.compute_ACC_ACT(valid_out)

@@ -1,4 +1,3 @@
-from mnmt.alternating_character_table import dict_act_path
 import pandas as pd
 import numpy as np
 from Levenshtein import distance
@@ -6,7 +5,7 @@ from Levenshtein import distance
 
 class AlternatingCharacterTable:
 
-    def __init__(self, act_path=dict_act_path):
+    def __init__(self, act_path):
         self.act = pd.read_excel(act_path, encoding='UTF-8')
         self.act['alternative_characters'] = self.act['alternative_characters'].apply(lambda x: x.split(','))
         self.act = self.act['alternative_characters']
