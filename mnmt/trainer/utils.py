@@ -45,3 +45,9 @@ def count_parameters(model):
 def create_mask(src, src_pad_idx):
     mask = (src != src_pad_idx).permute(1, 0)
     return mask
+
+
+def log_print(log_path, statement):
+    print(statement)
+    with open(log_path, 'a+') as f:
+        f.write(statement + '\n')

@@ -10,7 +10,6 @@ import torch.optim as optim
 import math
 import time
 import pandas as pd
-import sys
 
 
 class Trainer:
@@ -28,11 +27,7 @@ class Trainer:
         # init model
         self.model = model
 
-        # redirect std out
-        orig_stdout = sys.stdout
-        sys.stdout = open(self.train_log_path, "a+")
-
-        print(model.apply(init_weights))
+        log_print(self.train_log_path, model.apply(init_weights))
         self.num_params = count_parameters(self.model)
 
         self.optimizer = getattr(optim, args_feeder.optim_choice)(model.parameters(), lr=args_feeder.learning_rate)
@@ -83,13 +78,13 @@ class Trainer:
         # single or multi task
         self.multi_task_ratio = args_feeder.multi_task_ratio
         if self.multi_task_ratio == 1:
-            print("Running single-main-task experiment...")
+            log_print(self.train_log_path, "Running single-main-task experiment...")
             self.task = "Single-Main"
         elif self.multi_task_ratio == 0:
-            print("Running single-auxiliary-task experiment...")
+            log_print(self.train_log_path, "Running single-auxiliary-task experiment...")
             self.task = "Single-Auxiliary"
         else:
-            print("Running multi-task experiment...")
+            log_print(self.train_log_path, "Running multi-task experiment...")
             self.task = "Multi"
 
         # data
@@ -115,24 +110,20 @@ class Trainer:
         # translator
         self.translator = Seq2SeqTranslator(self.args_feeder.quiet_translate)
 
-        # close std out
-        sys.stdout.close()
-        sys.stdout = orig_stdout
-
     def run(self, burning_epoch):
         try:
             for epoch in range(self.train_memory_bank.total_epochs):
                 self.train_memory_bank.n_epoch = epoch
                 # apply nothing during the burning phase, recall Bayesian Modelling
                 if epoch <= burning_epoch:
-                    print("Renew Evaluation Records in the Burning Phase...")
+                    log_print(self.train_log_path, "Renew Evaluation Records in the Burning Phase...")
                     # abandon the best checkpoint in early stage
                     self.eval_memory_bank.best_valid_loss = float('inf')
                     self.eval_memory_bank.best_valid_acc = 0
                     self.eval_memory_bank.early_stopping_patience = self.early_stopping_patience
 
                 if self.eval_memory_bank.early_stopping_patience == 0:
-                    print("Early Stopping!")
+                    log_print(self.train_log_path, "Early Stopping!")
                     break
 
                 start_time = time.time()
@@ -151,13 +142,15 @@ class Trainer:
 
                 self.scheduler.step(valid_acc)  # update learning rate
 
-                print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
-                print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
-                print(f'\t Val. Loss: {valid_loss:.3f} | '
-                      f'Val. Acc: {valid_acc:.3f} | '
-                      f'Val. PPL: {math.exp(valid_loss):7.3f}')
+                log_print(self.train_log_path,
+                          f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
+                log_print(self.train_log_path,
+                          f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
+                log_print(self.train_log_path, f'\t Val. Loss: {valid_loss:.3f} | '
+                                               f'Val. Acc: {valid_acc:.3f} | '
+                                               f'Val. PPL: {math.exp(valid_loss):7.3f}')
         except KeyboardInterrupt:
-            print("Exiting loop")
+            log_print(self.train_log_path, "Exiting loop")
 
     @staticmethod
     def epoch_time(start_time, end_time):
@@ -179,12 +172,12 @@ class Trainer:
         """
         valid_criterion = self.args_feeder.valid_criterion
         assert valid_criterion in ['LOSS', 'ACC']
-        print("\n---------------------------------------")
-        print("[Epoch: {}][Validatiing...]".format(self.train_memory_bank.n_epoch))
+        log_print(self.train_log_path, "\n---------------------------------------")
+        log_print(self.train_log_path, "[Epoch: {}][Validatiing...]".format(self.train_memory_bank.n_epoch))
 
         # For Validation Loss
         if valid_loss <= self.eval_memory_bank.best_valid_loss:
-            print('\t\t Better Valid Loss! (at least equal)')
+            log_print(self.train_log_path, '\t\t Better Valid Loss! (at least equal)')
             self.eval_memory_bank.best_valid_loss = valid_loss
             if valid_criterion == 'LOSS':
                 torch.save(self.model.state_dict(),
@@ -196,7 +189,7 @@ class Trainer:
                 max(self.eval_memory_bank.early_stopping_patience - 1, 0)  # cannot be lower than 0
         # For Validation Accuracy
         if valid_acc >= self.eval_memory_bank.best_valid_acc:
-            print('\t\t Better Valid Acc! (at least equal)')
+            log_print(self.train_log_path, '\t\t Better Valid Acc! (at least equal)')
             self.eval_memory_bank.best_valid_acc = valid_acc
             self.eval_memory_bank.acc_valid_loss = valid_loss
             self.eval_memory_bank.best_valid_epoch = self.train_memory_bank.n_epoch
@@ -204,21 +197,22 @@ class Trainer:
             if valid_criterion == 'ACC':
                 torch.save(self.model.state_dict(),
                            'experiments/exp' + str(self.train_memory_bank.exp_num) + '/acc-model-seq2seq.pt')
-        print(f'\t Early Stopping Patience: '
-              f'{self.eval_memory_bank.early_stopping_patience}/{self.early_stopping_patience}')
-        print(f'\t Val. Loss: {valid_loss:.3f} | Val. Acc: {valid_acc:.3f} | Val. PPL: {math.exp(valid_loss):7.3f}')
-        print(
-            f'\t BEST. Val. Loss: {self.eval_memory_bank.best_valid_loss:.3f} | '
-            f'BEST. Val. Acc: {self.eval_memory_bank.best_valid_acc:.3f} | '
-            f'Val. Loss: {self.eval_memory_bank.acc_valid_loss:.3f} | '
-            f'BEST. Val. Epoch: {self.eval_memory_bank.best_valid_epoch} | '
-            f'BEST. Val. Step: {self.eval_memory_bank.best_train_step}')
-        print("---------------------------------------\n")
+        log_print(self.train_log_path, f'\t Early Stopping Patience: '
+                                       f'{self.eval_memory_bank.early_stopping_patience}/{self.early_stopping_patience}')
+        log_print(self.train_log_path,
+                  f'\t Val. Loss: {valid_loss:.3f} | Val. Acc: {valid_acc:.3f} | Val. PPL: {math.exp(valid_loss):7.3f}')
+        log_print(self.train_log_path,
+                  f'\t BEST. Val. Loss: {self.eval_memory_bank.best_valid_loss:.3f} | '
+                  f'BEST. Val. Acc: {self.eval_memory_bank.best_valid_acc:.3f} | '
+                  f'Val. Loss: {self.eval_memory_bank.acc_valid_loss:.3f} | '
+                  f'BEST. Val. Epoch: {self.eval_memory_bank.best_valid_epoch} | '
+                  f'BEST. Val. Step: {self.eval_memory_bank.best_train_step}')
+        log_print(self.train_log_path, "---------------------------------------\n")
 
     def update_aux(self, valid_acc_aux):
         if valid_acc_aux >= self.eval_memory_bank.best_valid_acc_aux:
-            print('\t\t Better Valid Acc on Auxiliary Task! (at least equal)')
-        print(f'\tBEST. Val. Acc Aux: {self.eval_memory_bank.best_valid_acc_aux}')
+            log_print(self.train_log_path, '\t\t Better Valid Acc on Auxiliary Task! (at least equal)')
+        log_print(self.train_log_path, f'\tBEST. Val. Acc Aux: {self.eval_memory_bank.best_valid_acc_aux}')
 
     @staticmethod
     def fix_output_n_trg(output, trg):
@@ -256,7 +250,8 @@ class Trainer:
 
         self.model.train()
         self.model.teacher_forcing_ratio = self.tfr
-        print("[Train]: Current Teacher Forcing Ratio: {:.3f}".format(self.model.teacher_forcing_ratio))
+        log_print(self.train_log_path,
+                  "[Train]: Current Teacher Forcing Ratio: {:.3f}".format(self.model.teacher_forcing_ratio))
 
         epoch_loss = 0
 
@@ -291,20 +286,20 @@ class Trainer:
                 for param_group in self.optimizer.param_groups:
                     lr = param_group['lr']
                 n_examples = len(self.data_container.dataset['train'].examples)
-                print('[Epoch: {}][#examples: {}/{}][#steps: {}]'.format(
+                log_print(self.train_log_path, '[Epoch: {}][#examples: {}/{}][#steps: {}]'.format(
                     self.train_memory_bank.n_epoch,
                     (i + 1) * self.args_feeder.batch_size,
                     n_examples,
                     self.train_memory_bank.n_steps))
-                print(f'\tTrain Loss: {running_loss:.3f} | '
-                      f'Train PPL: {math.exp(running_loss):7.3f} '
-                      f'| lr: {lr:.3e}')
+                log_print(self.train_log_path, f'\tTrain Loss: {running_loss:.3f} | '
+                                               f'Train PPL: {math.exp(running_loss):7.3f} '
+                                               f'| lr: {lr:.3e}')
 
                 # eval the validation set for every * steps
                 if (self.train_memory_bank.n_steps % (10 * self.train_memory_bank.report_interval)) == 0:
-                    print('-----Val------')
+                    log_print(self.train_log_path, '-----Val------')
                     valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False)
-                    print('-----Tst------')
+                    log_print(self.train_log_path, '-----Tst------')
                     self.evaluate(is_test=True)
 
                     self.update(valid_loss, valid_acc)
@@ -353,11 +348,11 @@ class Trainer:
                 else len(self.data_container.dataset['test'].examples)
 
             flag = "TEST" if is_test else "VAL"
-            print('[{}]: The number of correct predictions (main-task): {}/{}'
-                  .format(flag, correct, n_examples))
+            log_print(self.train_log_path, '[{}]: The number of correct predictions (main-task): {}/{}'
+                      .format(flag, correct, n_examples))
             if self.task == 'Multi':
-                print('[{}]: The number of correct predictions (main-task): {}/{}'
-                      .format(flag, correct_aux, n_examples))
+                log_print(self.train_log_path, '[{}]: The number of correct predictions (main-task): {}/{}'
+                          .format(flag, correct_aux, n_examples))
 
             acc = correct / n_examples
             acc_aux = correct_aux / n_examples  # if single-task, then just zero
