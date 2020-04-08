@@ -297,7 +297,7 @@ class Trainer:
 
         return epoch_loss / len(self.train_iter)
 
-    def evaluate(self, is_test=False, beam_size=1):
+    def evaluate(self, is_test=False, beam_size=1, output_file=None):
 
         self.model.eval()
         self.model.teacher_forcing_ratio = 0  # turn off teacher forcing
@@ -327,12 +327,8 @@ class Trainer:
                 epoch_loss += loss.item()
 
                 # compute acc through seq2seq translation
-                output_file = open(self.args_feeder.valid_out_path, 'w+') if not is_test \
-                    else open(self.args_feeder.test_out_path, 'w+')
-                output_file.write("PRED\tREF\n")  # tsv headline
                 correct += self.translator.translate(output, trg, trg_field=self.trg_field,
                                                      beam_size=beam_size, output_file=output_file)
-                output_file.close()
 
             epoch_loss = epoch_loss / len(iterator)
 
