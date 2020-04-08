@@ -22,6 +22,7 @@ class Trainer:
             args_feeder (ArgsFeeder):
             model: the NMT model
         """
+        self.args_feeder = args_feeder
         # init train.log
         self.train_log_path = "experiments/exp{}/train.log".format(self.args_feeder.exp_num)
         # init model
@@ -34,7 +35,6 @@ class Trainer:
         print(model.apply(init_weights))
         self.num_params = count_parameters(self.model)
 
-        self.args_feeder = args_feeder
         self.optimizer = getattr(optim, args_feeder.optim_choice)(model.parameters(), lr=args_feeder.learning_rate)
 
         # learning rate scheduler
