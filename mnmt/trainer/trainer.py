@@ -1,6 +1,7 @@
 from mnmt.inputter import ArgsFeeder
 from mnmt.inputter import generate_batch_iterators
 from mnmt.inputter import DataContainer
+from mnmt.translator import Seq2SeqTranslator
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,7 +10,6 @@ import time
 
 
 class Trainer:
-
     data_container: DataContainer
 
     def __init__(self, args_feeder: ArgsFeeder, model):
@@ -97,6 +97,9 @@ class Trainer:
 
         # loss function
         self.loss_function = self.construct_loss_function()
+
+        # translator
+        self.translator = Seq2SeqTranslator(self.args_feeder.quiet_translate)
 
     def run(self, burning_epoch):
         try:
@@ -294,53 +297,7 @@ class Trainer:
 
         return epoch_loss / len(self.train_iter)
 
-    @staticmethod
-    def matching(pred, ref, trg_field, quiet_translate):
-        tally = 0
-        for j in range(pred.shape[0]):
-
-            pred_j = pred[j, :]
-            pred_j_toks = []
-            for t in pred_j:
-                tok = trg_field.vocab.itos[t]
-                if tok == '<eos>':
-                    break
-                else:
-                    pred_j_toks.append(tok)
-            pred_j = ''.join(pred_j_toks)
-
-            ref_j = ref[j, :]
-            ref_j_toks = []
-            for t in ref_j:
-                tok = trg_field.vocab.itos[t]
-                if tok == '<eos>':
-                    break
-                else:
-                    ref_j_toks.append(tok)
-            ref_j = ''.join(ref_j_toks)
-
-            if not quiet_translate:
-                print("Pred: {} | Ref: {}".format(pred_j, ref_j))
-
-            if pred_j == ref_j:
-                tally += 1
-        return tally
-
-    def greedy_translate(self, output, trg, trg_field):
-        pred = output[1:].argmax(2).permute(1, 0)  # [batch_size, trg_length - 1]
-        ref = trg[1:].permute(1, 0)  # [batch_size, trg_length - 1]
-        return self.matching(pred, ref, trg_field=trg_field, quiet_translate=self.args_feeder.quiet_translate)
-
-    def beam_translate(self, output, trg, trg_field):
-        ...
-
-    def translate(self, output, trg, trg_field, beam=1):
-        if beam == 1:
-            return self.greedy_translate(output, trg, trg_field)
-        else:
-            ...
-
-    def evaluate(self, is_test=False, beam=1):
+    def evaluate(self, is_test=False, beam_size=1):
 
         self.model.eval()
         self.model.teacher_forcing_ratio = 0  # turn off teacher forcing
@@ -362,13 +319,20 @@ class Trainer:
                     trg_aux, trg_lens_aux = getattr(batch, self.args_feeder.auxiliary_name)
                     output, output_aux = self.model(src, src_lens, trg, trg_aux)
                     loss = self.compute_loss((output, output_aux), (trg, trg_aux))
-                    correct_aux += self.translate(output_aux, trg_aux, trg_field=self.auxiliary_field, beam=beam)
+                    correct_aux += self.translator.translate(output_aux, trg_aux, trg_field=self.auxiliary_field,
+                                                             beam_size=beam_size)
                 else:
                     output = self.model(src, src_lens, trg)
                     loss = self.compute_loss(output, trg)
-                correct += self.translate(output, trg, trg_field=self.trg_field, beam=beam)
-
                 epoch_loss += loss.item()
+
+                # compute acc through seq2seq translation
+                output_file = open(self.args_feeder.valid_out_path, 'w+') if not is_test \
+                    else open(self.args_feeder.test_out_path, 'w+')
+                output_file.write("PRED\tREF\n")  # tsv headline
+                correct += self.translator.translate(output, trg, trg_field=self.trg_field,
+                                                     beam_size=beam_size, output_file=output_file)
+                output_file.close()
 
             epoch_loss = epoch_loss / len(iterator)
 

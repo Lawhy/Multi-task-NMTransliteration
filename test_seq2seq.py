@@ -32,7 +32,8 @@ def set_up_args(data_container):
                       optim_choice='Adam', learning_rate=0.003, decay_patience=0,
                       lr_decay_factor=0.9, valid_criterion='ACC', early_stopping_patience=1000,
                       total_epochs=100, report_interval=50, exp_num=1, multi_task_ratio=1, data_container=data_container,
-                      src_lang='en', trg_lang='ch', auxiliary_name='pinyin_str', quiet_translate=True)
+                      src_lang='en', trg_lang='ch', auxiliary_name='pinyin_str', quiet_translate=True,
+                      valid_out_path="experiments/exp1/valid.out", test_out_path="experiments/exp1/test.out")
 
 
 def test_seq2seq(args_feeder):

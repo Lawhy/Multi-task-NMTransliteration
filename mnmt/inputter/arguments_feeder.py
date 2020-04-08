@@ -12,7 +12,7 @@ class ArgsFeeder:
                  lr_decay_factor: float, valid_criterion: str,
                  early_stopping_patience: int,
                  total_epochs: int, report_interval: int, exp_num: int,
-                 multi_task_ratio,
+                 multi_task_ratio, valid_out_path, test_out_path,
                  data_container, src_lang, trg_lang, auxiliary_name=None,
                  quiet_translate=True):
         """
@@ -58,6 +58,9 @@ class ArgsFeeder:
         self.report_interval = report_interval
         self.exp_num = exp_num
         self.multi_task_ratio = multi_task_ratio
+        self.valid_out_path = valid_out_path
+        self.test_out_path = test_out_path
+        # For data container
         self.data_container = data_container
         self.src_lang = src_lang
         self.trg_lang = trg_lang
