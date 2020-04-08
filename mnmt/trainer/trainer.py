@@ -419,6 +419,7 @@ class Trainer:
                 test_example = vars(self.data_container.dataset['test'].examples[i])
                 test_src = "".join(test_example[self.args_feeder.src_lang])
                 test_trg = "".join(test_example[self.args_feeder.trg_lang])
+                print(test_trg, dp["REF"])
                 assert test_trg == str(dp["REF"])
                 if dp["PRED"] in test_ref_dict[test_src]:
                     count += 1
