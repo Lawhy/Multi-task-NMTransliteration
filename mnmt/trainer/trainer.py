@@ -389,7 +389,7 @@ class Trainer:
 
         # save model settings
         with open("experiments/exp{}/settings".format(self.args_feeder.exp_num), "w+") as f:
-            f.write("Direction\t{}-to-{}".format(self.args_feeder.src_lang, self.args_feeder.trg_lang))
+            f.write("Direction\t{}-to-{}\n".format(self.args_feeder.src_lang, self.args_feeder.trg_lang))
             f.write("Task\t{}\n".format(self.task))
             f.write("MTR\t{}\n".format(self.multi_task_ratio))
             f.write("#Params\t{}\n".format(self.num_params))
