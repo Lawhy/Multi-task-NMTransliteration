@@ -412,16 +412,24 @@ class Trainer:
             eval_results["Replaced"] = [results_valid["replaced"], results_test["replaced"]]
         if test_ref_dict is not None:
             test_out_df = pd.read_csv(self.args_feeder.test_out_path, sep='\t')
-            assert len(test_out_df) == len(self.data_container.dataset['test'].examples)
-            assert len(test_out_df) == len(test_ref_dict)
+            test_srcs = []
+            for i, batch in enumerate(self.test_iter):
+                src, src_lens = getattr(batch, self.args_feeder.src_lang)
+                for j in range(src.shape[0]):
+                    src_j = src[j, :]
+                    src_j_toks = []
+                    for t in src_j:
+                        tok = self.src_field.vocab.itos[t]
+                        if tok == '<eos>':
+                            break
+                        else:
+                            src_j_toks.append(tok)
+                    test_srcs.append(''.join(src_j_toks))
+            test_out_df['SRC'] = test_srcs
+            print(test_out_df)
             count = 0
             for i, dp in test_out_df.iterrows():
-                test_example = vars(self.data_container.dataset['test'].examples[i])
-                test_src = "".join(test_example[self.args_feeder.src_lang])
-                test_trg = "".join(test_example[self.args_feeder.trg_lang])
-                print(test_trg, dp["REF"])
-                assert test_trg == str(dp["REF"])
-                if dp["PRED"] in test_ref_dict[test_src]:
+                if dp["PRED"] in test_ref_dict[dp["SRC"]]:
                     count += 1
             eval_results["ACC+"] = ["NA", count / len(test_out_df)]
         print(eval_results)
