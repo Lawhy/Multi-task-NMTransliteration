@@ -15,7 +15,7 @@ class Seq2MultiSeq(nn.Module):
         self.encoder = encoder
         self.decoder_list = decoder_list
         self.teacher_forcing_ratio = teacher_forcing_ratio
-        self.device = self.decoder_list[0].device
+        self.device = self.args_feeder.device
 
     def forward(self, src, src_lens, *trg):
         encoder_outputs, encoder_final_state = self.encoder(src, src_lens)
