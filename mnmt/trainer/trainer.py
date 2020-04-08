@@ -301,7 +301,6 @@ class Trainer:
 
         self.model.eval()
         self.model.teacher_forcing_ratio = 0  # turn off teacher forcing
-        print("[Eval Start]: Current Teacher Forcing Ratio: {:.3f}".format(self.model.teacher_forcing_ratio))
 
         epoch_loss = 0
         correct = 0
@@ -343,7 +342,6 @@ class Trainer:
             acc_aux = correct_aux / n_examples  # if single-task, then just zero
 
             self.model.teacher_forcing_ratio = self.tfr  # restore teacher-forcing ratio
-            print("[Eval End]: Current Teacher Forcing Ratio: {:.3f}".format(self.model.teacher_forcing_ratio))
 
         return epoch_loss, acc, acc_aux
 
