@@ -80,12 +80,15 @@ class Trainer:
         if self.multi_task_ratio == 1:
             log_print(self.train_log_path, "Running single-main-task experiment...")
             self.task = "Single-Main"
+            self.FLAG = "main-task (single)"
         elif self.multi_task_ratio == 0:
             log_print(self.train_log_path, "Running single-auxiliary-task experiment...")
             self.task = "Single-Auxiliary"
+            self.FLAG = "aux-task (single)"
         else:
             log_print(self.train_log_path, "Running multi-task experiment...")
             self.task = "Multi"
+            self.FLAG = "main-task (multi)"
 
         # data
         self.data_container = args_feeder.data_container
@@ -197,8 +200,9 @@ class Trainer:
             if valid_criterion == 'ACC':
                 torch.save(self.model.state_dict(),
                            'experiments/exp' + str(self.train_memory_bank.exp_num) + '/acc-model-seq2seq.pt')
-        log_print(self.train_log_path, f'\t Early Stopping Patience: '
-                                       f'{self.eval_memory_bank.early_stopping_patience}/{self.early_stopping_patience}')
+        log_print(self.train_log_path,
+                  f'\t Early Stopping Patience: '
+                  f'{self.eval_memory_bank.early_stopping_patience}/{self.early_stopping_patience}')
         log_print(self.train_log_path,
                   f'\t Val. Loss: {valid_loss:.3f} | Val. Acc: {valid_acc:.3f} | Val. PPL: {math.exp(valid_loss):7.3f}')
         log_print(self.train_log_path,
@@ -348,10 +352,10 @@ class Trainer:
                 else len(self.data_container.dataset['test'].examples)
 
             flag = "TEST" if is_test else "VAL"
-            log_print(self.train_log_path, '[{}]: The number of correct predictions (main-task): {}/{}'
-                      .format(flag, correct, n_examples))
+            log_print(self.train_log_path, '[{}]: The number of correct predictions ({}): {}/{}'
+                      .format(flag, correct, self.FLAG, n_examples))
             if self.task == 'Multi':
-                log_print(self.train_log_path, '[{}]: The number of correct predictions (main-task): {}/{}'
+                log_print(self.train_log_path, '[{}]: The number of correct predictions (aux-task (multi)): {}/{}'
                           .format(flag, correct_aux, n_examples))
 
             acc = correct / n_examples
