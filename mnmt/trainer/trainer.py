@@ -355,7 +355,7 @@ class Trainer:
 
             flag = "TEST" if is_test else "VAL"
             log_print(self.train_log_path, '[{}]: The number of correct predictions ({}): {}/{}'
-                      .format(flag, correct, self.FLAG, n_examples))
+                      .format(flag, self.FLAG, correct, n_examples))
             if self.task == 'Multi':
                 log_print(self.train_log_path, '[{}]: The number of correct predictions (aux-task (multi)): {}/{}'
                           .format(flag, correct_aux, n_examples))
