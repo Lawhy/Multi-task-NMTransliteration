@@ -113,12 +113,12 @@ class Trainer:
         # translator
         self.translator = Seq2SeqTranslator(self.args_feeder.quiet_translate)
 
-    def run(self, burning_epoch):
+    def run(self, burn_in_epoch):
         try:
             for epoch in range(self.train_memory_bank.total_epochs):
                 self.train_memory_bank.n_epoch = epoch
-                # apply nothing during the burning phase, recall Bayesian Modelling
-                if epoch <= burning_epoch:
+                # save no results the burn-in period, recall Bayesian Modelling
+                if epoch <= burn_in_epoch:
                     log_print(self.train_log_path, "Renew Evaluation Records in the Burning Phase...")
                     # abandon the best checkpoint in early stage
                     self.eval_memory_bank.best_valid_loss = float('inf')
@@ -427,7 +427,6 @@ class Trainer:
                             src_j_toks.append(tok)
                     test_srcs.append(''.join(src_j_toks))
             test_out_df['SRC'] = test_srcs
-            # print(test_out_df)
             count = 0
             for i, dp in test_out_df.iterrows():
                 if dp["PRED"] in test_ref_dict[dp["SRC"]]:
@@ -435,5 +434,3 @@ class Trainer:
             eval_results["ACC+"] = ["NA", count / len(test_out_df)]
         print(eval_results)
         eval_results.to_csv("experiments/exp" + str(self.args_feeder.exp_num) + "/eval.results", sep="\t")
-
-
