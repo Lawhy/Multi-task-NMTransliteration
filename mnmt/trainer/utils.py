@@ -50,4 +50,4 @@ def create_mask(src, src_pad_idx):
 def log_print(log_path, statement):
     print(statement)
     with open(log_path, 'a+') as f:
-        f.write(statement + '\n')
+        f.write(f'{statement}\n')
