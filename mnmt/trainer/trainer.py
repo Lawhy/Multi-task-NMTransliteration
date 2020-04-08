@@ -427,7 +427,7 @@ class Trainer:
                             src_j_toks.append(tok)
                     test_srcs.append(''.join(src_j_toks))
             test_out_df['SRC'] = test_srcs
-            print(test_out_df)
+            # print(test_out_df)
             count = 0
             for i, dp in test_out_df.iterrows():
                 if dp["PRED"] in test_ref_dict[dp["SRC"]]:
