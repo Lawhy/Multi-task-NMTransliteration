@@ -425,6 +425,8 @@ class Trainer:
                         else:
                             src_j_toks.append(tok)
                     test_srcs.append(''.join(src_j_toks))
+            print(test_srcs)
+            print(len(test_srcs))
             test_out_df['SRC'] = test_srcs
             print(test_out_df)
             count = 0
