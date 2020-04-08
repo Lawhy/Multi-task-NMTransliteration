@@ -7,7 +7,7 @@ class ArgsFeeder:
 
     def __init__(self,
                  encoder_args_feeder: ModuleArgsFeeder,
-                 decoder_args_feeder: List[ModuleArgsFeeder],
+                 decoder_args_feeders: List[ModuleArgsFeeder],
                  batch_size: int, src_pad_idx: int, trg_pad_idx: int,
                  optim_choice: str, learning_rate: float, decay_patience: int,
                  lr_decay_factor: float, valid_criterion: str,
@@ -19,7 +19,7 @@ class ArgsFeeder:
         """
         Args:
             encoder_args_feeder (ModuleArgsFeeder):
-            decoder_args_feeder List[ModuleArgsFeeder]:
+            decoder_args_feeders List[ModuleArgsFeeder]:
             batch_size (int): number of samples in a batch
             src_pad_idx (int):
             trg_pad_idx (int):
@@ -42,7 +42,7 @@ class ArgsFeeder:
             quiet_translate:
         """
         self.encoder_args_feeder = encoder_args_feeder
-        self.decoder_args_feeder = decoder_args_feeder
+        self.decoder_args_feeders = decoder_args_feeders
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print("The current device for PyTorch is {}".format(self.device))
         self.batch_size = batch_size
