@@ -1,6 +1,5 @@
 from mnmt.inputter import ArgsFeeder
 from mnmt.encoder import BasicEncoder
-from mnmt.decoder import BasicDecoder
 from mnmt.trainer.utils import create_mask
 import torch.nn as nn
 
@@ -8,7 +7,7 @@ import torch.nn as nn
 class Seq2MultiSeq(nn.Module):
 
     def __init__(self, args_feeder: ArgsFeeder, encoder: BasicEncoder,
-                 decoder_list: nn.ModuleList[BasicDecoder], teacher_forcing_ratio):
+                 decoder_list: nn.ModuleList, teacher_forcing_ratio):
         super().__init__()
         self.args_feeder = args_feeder
         self.encoder = encoder
