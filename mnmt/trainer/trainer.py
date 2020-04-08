@@ -381,6 +381,7 @@ class Trainer:
             results_valid = act.compute_ACC_ACT(valid_out)
             results_test = act.compute_ACC_ACT(test_out)
             eval_results["ACC-ACT"] = [results_valid["acc-act"], results_test["acc-act"]]
+            eval_results["Replaced"] = [results_valid["replaced"], results_test["replaced"]]
         if enable_acc_multi:
             ...
         print(eval_results)

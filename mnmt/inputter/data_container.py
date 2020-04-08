@@ -32,7 +32,7 @@ class DataContainer:
         print("Data sizes: [(Train, {}), (Valid, {}), (Test, {})]".format(self.size(self.dataset["train"]),
                                                                           self.size(self.dataset["valid"]),
                                                                           self.size(self.dataset["test"])))
-        self.show_train_examples()
+        # self.show_train_examples()
 
     @staticmethod
     def tokenize(word):
