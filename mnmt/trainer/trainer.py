@@ -338,9 +338,11 @@ class Trainer:
                 else len(self.data_container.dataset['test'].examples)
 
             flag = "TEST" if is_test else "VAL"
-            print('[{}]: The number of correct predictions (main-task): {}'.format(flag, correct))
+            print('[{}]: The number of correct predictions (main-task): {}/{}'
+                  .format(flag, correct, n_examples))
             if self.task == 'Multi':
-                print('[{}]: The number of correct predictions (main-task): {}'.format(flag, correct_aux))
+                print('[{}]: The number of correct predictions (main-task): {}/{}'
+                      .format(flag, correct_aux, n_examples))
 
             acc = correct / n_examples
             acc_aux = correct_aux / n_examples  # if single-task, then just zero
@@ -387,5 +389,3 @@ class Trainer:
             ...
         print(eval_results)
         eval_results.to_csv("experiments/exp" + str(self.args_feeder.exp_num) + "/eval.results", sep="\t")
-
-
