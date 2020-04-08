@@ -386,6 +386,6 @@ class Trainer:
         if enable_acc_multi:
             ...
         print(eval_results)
-        eval_results.to_csv("experiments/exp" + str(self.args_feeder.exp_num) + "eval.results", sep="\t")
+        eval_results.to_csv("experiments/exp/" + str(self.args_feeder.exp_num) + "eval.results", sep="\t")
 
 
