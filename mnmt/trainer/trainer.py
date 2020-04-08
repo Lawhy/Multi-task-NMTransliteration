@@ -1,15 +1,16 @@
 from mnmt.inputter import ArgsFeeder
 from mnmt.inputter import generate_batch_iterators
-from mnmt.inputter import DataContainer
 from mnmt.translator import Seq2SeqTranslator
 from mnmt.alternating_character_table import AlternatingCharacterTable
 from mnmt.alternating_character_table import dict_act_path
+from mnmt.trainer.utils import *
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import math
 import time
 import pandas as pd
+import sys
 
 
 class Trainer:
@@ -21,9 +22,19 @@ class Trainer:
             args_feeder (ArgsFeeder):
             model: the NMT model
         """
+        # init train.log
+        self.train_log_path = "experiments/exp{}/train.log".format(self.args_feeder.exp_num)
+        # init model
         self.model = model
+
+        # redirect std out
+        orig_stdout = sys.stdout
+        sys.stdout = open(self.train_log_path, "a+")
+
+        print(model.apply(init_weights))
+        self.num_params = count_parameters(self.model)
+
         self.args_feeder = args_feeder
-        # optimizer
         self.optimizer = getattr(optim, args_feeder.optim_choice)(model.parameters(), lr=args_feeder.learning_rate)
 
         # learning rate scheduler
@@ -103,6 +114,10 @@ class Trainer:
 
         # translator
         self.translator = Seq2SeqTranslator(self.args_feeder.quiet_translate)
+
+        # close std out
+        sys.stdout.close()
+        sys.stdout = orig_stdout
 
     def run(self, burning_epoch):
         try:
@@ -370,6 +385,12 @@ class Trainer:
         f.write("PRED\tREF\n")
         test_loss, test_acc, test_acc_aux = self.evaluate(is_test=True, output_file=f)
         f.close()
+
+        # save model settings
+        with open("experiments/exp{}/settings".format(self.args_feeder.exp_num), "w+") as f:
+            f.write("Task\t{}\n".format(self.task))
+            f.write("MTR\t{}\n".format(self.multi_task_ratio))
+            f.write("#Params\t{}\n".format(self.num_params))
 
         # save evaluation results
         eval_results = pd.DataFrame(columns=["Loss", "ACC"], index=["Valid", "Test"])
