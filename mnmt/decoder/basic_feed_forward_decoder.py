@@ -46,9 +46,8 @@ class BasicFeedForwardDecoder(nn.Module):
         # s_t = [n_layers, batch_size, hidden_dim], tuple for LSTM
 
         # for beam search setting
-        print(mask.shape)
         if ith_sample is not None:
-            mask = mask[ith_sample, :]
+            mask = mask[ith_sample, :].unsqueeze(0)
         print(mask.shape)
 
         if isinstance(s_t_minus_1, tuple):  # LSTM

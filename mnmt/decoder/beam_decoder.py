@@ -72,7 +72,6 @@ class BeamDecoder(BasicDecoder):
                 teacher_force = random.random() < teacher_forcing_ratio
                 for j in range(len(batch_nodes)):
                     node = batch_nodes[j]
-                    print(node.y_hat_n.shape, node.s_n[0].shape, encoder_outputs_i.shape)
                     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
                                                                         encoder_outputs_i, mask, ith_sample=i)
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
@@ -84,7 +83,9 @@ class BeamDecoder(BasicDecoder):
                         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
+                print(indices[0])
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]
+                print(prev_node_inds)
                 new_batch_nodes = []
                 for k in range(self.beam_size):
                     y_hat_n = indices[0, k] if not teacher_force else trg[t, i]
