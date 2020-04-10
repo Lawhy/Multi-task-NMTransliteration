@@ -98,6 +98,8 @@ class BeamDecoder(BasicDecoder):
                         s_n = s_i_t_full[prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]\
                             .unsqueeze(0)
                     y_hat_path = prev_node.y_hat_path
+                    print(y_hat_path.shape)
+                    print(y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size].shape)
                     y_hat_path[t, :] = \
                         y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
                     new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
