@@ -59,7 +59,7 @@ class BasicFeedForwardDecoder(nn.Module):
             s_0 = s_t_minus_1.unsqueeze(0).repeat(2, 1, 1)
             rnn_output, s_t = self.rnn(torch.cat((y_t, context), dim=2), s_0)
         s_t = s_t[-1]  # [batch size, hidden_dim], as last layer extracted
-        assert (rnn_output == s_t.unsqueeze(0)).all()
+        # assert (rnn_output == s_t.unsqueeze(0)).all()
         y_t = y_t.squeeze(0)  # [batch_size]
         context = context.squeeze(0)  # [batch_size, encoder_hidden_dim * 2]
 
