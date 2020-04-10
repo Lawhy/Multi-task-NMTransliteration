@@ -28,7 +28,7 @@ class BasicFeedForwardDecoder(nn.Module):
             nn.LogSoftmax(dim=1)
         )
 
-    def forward(self, y_t, s_t_minus_1, encoder_outputs, mask):
+    def forward(self, y_t, s_t_minus_1, encoder_outputs, mask, ith_sample=None):
         """s_t = Decoder(d(y_t), w_t, s_{t-1}) decoder hidden state for time t
             y_t_plus_1_hat = f(d(y_t), w_t, s_t) decoder output for time t
 
@@ -44,6 +44,12 @@ class BasicFeedForwardDecoder(nn.Module):
         # context = [1, batch_size, encoder_hidden_dim * 2]
         # rnn_output = [1, batch_size, hidden_dim]
         # s_t = [n_layers, batch_size, hidden_dim], tuple for LSTM
+
+        # for beam search setting
+        print(mask.shape)
+        if ith_sample is not None:
+            mask = mask[ith_sample, :]
+        print(mask.shape)
 
         if isinstance(s_t_minus_1, tuple):  # LSTM
             scores, context = self.attention(s_t_minus_1[0], encoder_outputs, mask)
