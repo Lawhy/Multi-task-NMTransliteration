@@ -92,11 +92,11 @@ class BeamDecoder(BasicDecoder):
                     prev_node = batch_nodes[prev_node_ind]
                     if isinstance(s_i_t_full, tuple):
                         s_n = (s_i_t_full[0]
-                               [prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim].unsqueeze(0),
+                               [:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim].unsqueeze(0),
                                s_i_t_full[1]
-                               [prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim].unsqueeze(0))
+                               [:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim].unsqueeze(0))
                     else:
-                        s_n = s_i_t_full[prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]\
+                        s_n = s_i_t_full[:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]\
                             .unsqueeze(0)
                     y_hat_path = prev_node.y_hat_path
                     y_hat_path[t, :] = \
