@@ -60,6 +60,7 @@ class BeamDecoder(BasicDecoder):
                 # each time using current y_t, attention, and previous s_{t-1}
                 # to compute s_t and predict y_{t+1}_hat
                 # we use the same subscript t for y and s here because y starts from 1, s starts from 0
+                print(t)
 
                 # explore beam-size * vocab-size possibilities
                 y_hat_i_t_full = torch.zeros(1, self.trg_vocab_size * self.beam_size).to(self.device)
@@ -72,6 +73,7 @@ class BeamDecoder(BasicDecoder):
                 teacher_force = random.random() < teacher_forcing_ratio
                 for j in range(len(batch_nodes)):
                     node = batch_nodes[j]
+                    print(node.y_hat_n.shape, node.s_n.shape, encoder_outputs_i.shape)
                     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
                                                                         encoder_outputs_i, mask, ith_sample=i)
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
@@ -112,4 +114,5 @@ class BeamDecoder(BasicDecoder):
                     end_node = node
             y_hat[:, i, :] = end_node.y_hat_path
 
+        print(y_hat.shape)
         return y_hat
