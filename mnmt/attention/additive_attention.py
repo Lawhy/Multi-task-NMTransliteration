@@ -56,6 +56,7 @@ class AdditiveAttention(Attention):
         scores = self.compute_score(query, encoder_outputs, mask)  # scores = [batch_size, 1, src_length]
         values = encoder_outputs.permute(1, 0, 2)  # [batch_size, src_lengths, encoder_hidden_dim * 2]
         # context matrix is the weighted encoder outputs for each sample in the batch
+        print(scores.size(), values.size())
         context = super().compute_context(scores, values)  # [1, batch_size, encoder_hid_dim * 2]
 
         return scores.squeeze(1), context
