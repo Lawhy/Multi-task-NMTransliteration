@@ -106,6 +106,8 @@ class BeamDecoder(BasicDecoder):
                                                     log_prob_n=prev_node.log_prob_n + 0
                                                     if teacher_force else prev_node.log_prob_n + y_hat_i_t_topk[0, k],
                                                     pre_node=prev_node, y_hat_path=y_hat_path))
+                    print(vars(new_batch_nodes[k]))
+                    print("-------------")
                 batch_nodes = new_batch_nodes
 
             # backtrace
