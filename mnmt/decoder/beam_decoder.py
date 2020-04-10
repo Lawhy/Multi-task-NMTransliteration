@@ -42,7 +42,6 @@ class BeamDecoder(BasicDecoder):
 
         # decode each sample in the batch
         for i in range(batch_size):
-            print(i)
             y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [batch_size=1]
 
             if isinstance(s_t, tuple):
@@ -57,6 +56,7 @@ class BeamDecoder(BasicDecoder):
             batch_nodes = [root_node] * 10
 
             for t in range(1, trg.size(0)):
+                print(t)
                 # start from 1 as the first column are zeros that represent <sos>
                 # each time using current y_t, attention, and previous s_{t-1}
                 # to compute s_t and predict y_{t+1}_hat
@@ -106,8 +106,7 @@ class BeamDecoder(BasicDecoder):
                                                     log_prob_n=prev_node.log_prob_n + 0
                                                     if teacher_force else prev_node.log_prob_n + y_hat_i_t_topk[0, k],
                                                     pre_node=prev_node, y_hat_path=y_hat_path))
-                    print(vars(new_batch_nodes[k]))
-                    print("-------------")
+                    print(y_hat_n.shape, s_n.shape,y_hat_path.shape)
                 batch_nodes = new_batch_nodes
 
             # backtrace
