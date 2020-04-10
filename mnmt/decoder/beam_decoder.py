@@ -73,7 +73,7 @@ class BeamDecoder(BasicDecoder):
                 teacher_force = random.random() < teacher_forcing_ratio
                 for j in range(len(batch_nodes)):
                     node = batch_nodes[j]
-                    print(node.y_hat_n.shape, node.s_n[0].shape, encoder_outputs_i.shape)
+                    print(vars(node))
                     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
                                                                         encoder_outputs_i, mask, ith_sample=i)
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
@@ -104,6 +104,9 @@ class BeamDecoder(BasicDecoder):
                                                     log_prob_n=prev_node.log_prob_n + 0
                                                     if teacher_force else prev_node.log_prob_n + y_hat_i_t_topk[0, k],
                                                     pre_node=prev_node, y_hat_path=y_hat_path))
+                    print(y_hat_n.shape)
+                    assert y_hat_n.shape[0] == 1
+                    assert s_n[0].shape[1] == self.hidden_dim
                 batch_nodes = new_batch_nodes
 
             # backtrace
