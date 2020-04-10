@@ -50,6 +50,7 @@ class BasicFeedForwardDecoder(nn.Module):
             mask = mask[ith_sample, :].unsqueeze(0)  # match batch-size 1
 
         if isinstance(s_t_minus_1, tuple):  # LSTM
+            print(s_t_minus_1[0].shape, encoder_outputs.shape, mask.shape)
             scores, context = self.attention(s_t_minus_1[0], encoder_outputs, mask)
             s_0, c_0 = s_t_minus_1[0].unsqueeze(0).repeat(2, 1, 1), s_t_minus_1[1].unsqueeze(0).repeat(2, 1, 1)
             rnn_output, (s_t, c_t) = self.rnn(torch.cat((y_t, context), dim=2), (s_0, c_0))
