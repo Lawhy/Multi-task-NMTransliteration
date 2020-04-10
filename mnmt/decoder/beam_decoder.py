@@ -53,7 +53,7 @@ class BeamDecoder(BasicDecoder):
             root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=0, s_n=s_i_t, pre_node=None, y_hat_path=y_hat[:, i, :])
             #  y_hat_path = [trg_length, trg_vocab_size]
             batch_nodes = [root_node]
-            print(root_node.y_hat_n.shape, root_node.s_n.shape, root_node.y_hat_path.shape)
+            print(root_node.y_hat_n.shape, root_node.s_n[0].shape, root_node.y_hat_path.shape)
             print("-----------")
 
             for t in range(1, trg.size(0)):
