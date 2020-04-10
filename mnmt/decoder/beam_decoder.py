@@ -83,27 +83,29 @@ class BeamDecoder(BasicDecoder):
                         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
-                print(indices[0])
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]
-                print(prev_node_inds)
                 new_batch_nodes = []
                 for k in range(self.beam_size):
                     y_hat_n = indices[0, k] if not teacher_force else trg[t, i]
                     prev_node_ind = prev_node_inds[k]
                     prev_node = batch_nodes[prev_node_ind]
                     if isinstance(s_i_t_full, tuple):
-                        s_n = (s_i_t_full[0][:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim],
-                               s_i_t_full[1][:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim])
+                        s_n = (s_i_t_full[0]
+                               [prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim].unsqueeze(0),
+                               s_i_t_full[1]
+                               [prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim].unsqueeze(0))
                     else:
-                        s_n = s_i_t_full[:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]
+                        s_n = s_i_t_full[prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]\
+                            .unsqueeze(0)
                     y_hat_path = prev_node.y_hat_path
                     y_hat_path[t, :] = \
-                        y_hat_i_t_full[1, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
+                        y_hat_i_t_full[prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
                     new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
                                                     s_n=s_n,
                                                     log_prob_n=prev_node.log_prob_n + 0
                                                     if teacher_force else prev_node.log_prob_n + y_hat_i_t_topk[0, k],
                                                     pre_node=prev_node, y_hat_path=y_hat_path))
+                    print(y_hat_path)
                 batch_nodes = new_batch_nodes
 
             # backtrace
