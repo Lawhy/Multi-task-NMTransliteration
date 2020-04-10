@@ -99,7 +99,7 @@ class BeamDecoder(BasicDecoder):
                             .unsqueeze(0)
                     y_hat_path = prev_node.y_hat_path
                     y_hat_path[t, :] = \
-                        y_hat_i_t_full[prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
+                        y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
                     new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
                                                     s_n=s_n,
                                                     log_prob_n=prev_node.log_prob_n + 0
