@@ -7,13 +7,12 @@ class BasicTranslator:
         """
         self.quiet_translate = quiet_translate
 
-    def translate(self, output, trg, trg_field, beam_size, output_file=None):
+    def translate(self, output, trg, trg_field, output_file=None):
         """
         Args:
             output:  [trg_length, batch_size, output_dim], model's output
             trg:  [trg_length, batch_size], target reference
             trg_field:  target language field
-            beam_size:  size for beam_size search
             output_file:  save translation results in output_file
         """
         raise NotImplementedError

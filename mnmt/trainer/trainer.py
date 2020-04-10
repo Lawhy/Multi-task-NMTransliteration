@@ -304,8 +304,7 @@ class Trainer:
                 # eval the validation set for every * steps
                 if (self.train_memory_bank.n_steps % (10 * self.train_memory_bank.report_interval)) == 0:
                     log_print(self.train_log_path, '-----Val------')
-                    valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False,
-                                                                         beam_size=self.args_feeder.beam_size)
+                    valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False)
                     # log_print(self.train_log_path, '-----Tst------')
                     # self.evaluate(is_test=True)
 
@@ -317,7 +316,7 @@ class Trainer:
 
         return epoch_loss / len(self.train_iter)
 
-    def evaluate(self, is_test=False, beam_size=1, output_file=None):
+    def evaluate(self, is_test=False, output_file=None):
 
         self.model.eval()
         self.model.teacher_forcing_ratio = 0  # turn off teacher forcing
@@ -338,16 +337,14 @@ class Trainer:
                     trg_aux, trg_lens_aux = getattr(batch, self.args_feeder.auxiliary_name)
                     output, output_aux = self.model(src, src_lens, trg, trg_aux)
                     loss = self.compute_loss((output, output_aux), (trg, trg_aux))
-                    correct_aux += self.translator.translate(output_aux, trg_aux, trg_field=self.auxiliary_field,
-                                                             beam_size=beam_size)
+                    correct_aux += self.translator.translate(output_aux, trg_aux, trg_field=self.auxiliary_field)
                 else:
                     output = self.model(src, src_lens, trg)
                     loss = self.compute_loss(output, trg)
                 epoch_loss += loss.item()
 
                 # compute acc through seq2seq translation
-                correct += self.translator.translate(output, trg, trg_field=self.trg_field,
-                                                     beam_size=beam_size, output_file=output_file)
+                correct += self.translator.translate(output, trg, trg_field=self.trg_field, output_file=output_file)
 
             epoch_loss = epoch_loss / len(iterator)
 
