@@ -43,6 +43,7 @@ class BeamDecoder(BasicDecoder):
         # decode each sample in the batch
         for i in range(batch_size):
             y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [1, trg_vocab_size]
+            print(y_hat_i_t, y_hat_i_t.shape)
 
             if isinstance(s_t, tuple):
                 s_i_t = (s_t[0][i].unsqueeze(0), s_t[1][i].unsqueeze(0))  # [1, hidden_dim], tuple
@@ -70,7 +71,7 @@ class BeamDecoder(BasicDecoder):
                 else:
                     s_i_t_full = torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device)
 
-                print(y_hat_i_t_full.shape, s_i_t_full.shape)
+                print(y_hat_i_t_full.shape, s_i_t_full[0].shape)
 
                 teacher_force = random.random() < teacher_forcing_ratio
                 for j in range(len(batch_nodes)):
