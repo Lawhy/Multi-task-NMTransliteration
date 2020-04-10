@@ -47,8 +47,7 @@ class BasicFeedForwardDecoder(nn.Module):
 
         # for beam search setting
         if ith_sample is not None:
-            mask = mask[ith_sample, :].unsqueeze(0)
-        print(mask.shape)
+            mask = mask[ith_sample, :].unsqueeze(0)  # match batch-size 1
 
         if isinstance(s_t_minus_1, tuple):  # LSTM
             scores, context = self.attention(s_t_minus_1[0], encoder_outputs, mask)
