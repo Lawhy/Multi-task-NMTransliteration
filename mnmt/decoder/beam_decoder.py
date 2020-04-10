@@ -42,8 +42,7 @@ class BeamDecoder(BasicDecoder):
 
         # decode each sample in the batch
         for i in range(batch_size):
-            y_hat_i_t = y_hat_t[i].unsqueeze(0).unsqueeze(0)  # [1, trg_vocab_size]
-            print(y_hat_i_t, y_hat_i_t.shape)
+            y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [batch_size=1]
 
             if isinstance(s_t, tuple):
                 s_i_t = (s_t[0][i].unsqueeze(0), s_t[1][i].unsqueeze(0))  # [1, hidden_dim], tuple
@@ -51,11 +50,10 @@ class BeamDecoder(BasicDecoder):
                 s_i_t = s_t[i].unsqueeze(0)  # [1, hidden_dim]
 
             encoder_outputs_i = encoder_outputs[:, i, :].unsqueeze(1)  # [src_length, 1, encoder_hidden_dim * 2]
-            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=0, s_n=s_i_t, pre_node=None, y_hat_path=y_hat[:, i, :])
+            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=0, s_n=s_i_t, pre_node=None,
+                                 y_hat_path=y_hat[:, i, :].unsqueeze(1))
             #  y_hat_path = [trg_length, trg_vocab_size]
             batch_nodes = [root_node]
-            print(root_node.y_hat_n.shape, root_node.s_n[0].shape, root_node.y_hat_path.shape)
-            print("-----------")
 
             for t in range(1, trg.size(0)):
                 # start from 1 as the first column are zeros that represent <sos>
@@ -71,11 +69,10 @@ class BeamDecoder(BasicDecoder):
                 else:
                     s_i_t_full = torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device)
 
-                print(y_hat_i_t_full.shape, s_i_t_full[0].shape)
-
                 teacher_force = random.random() < teacher_forcing_ratio
                 for j in range(len(batch_nodes)):
                     node = batch_nodes[j]
+                    print(node.y_hat_n.shape, node.s_n.shape, encoder_outputs_i.shape)
                     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n, encoder_outputs_i, mask)
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
                     y_hat_i_t_full[:, j*self.trg_vocab_size: (j + 1)*self.trg_vocab_size] = y_hat_i_t_j
