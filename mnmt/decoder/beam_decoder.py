@@ -73,7 +73,7 @@ class BeamDecoder(BasicDecoder):
                 teacher_force = random.random() < teacher_forcing_ratio
                 for j in range(len(batch_nodes)):
                     node = batch_nodes[j]
-                    print(node.y_hat_n.shape, node.s_n.shape, encoder_outputs_i.shape)
+                    print(node.y_hat_n.shape, node.s_n[0].shape, encoder_outputs_i.shape)
                     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
                                                                         encoder_outputs_i, mask, ith_sample=i)
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
