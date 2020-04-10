@@ -41,8 +41,8 @@ class BeamDecoder(BasicDecoder):
 
         # decode each sample in the batch
         for i in range(batch_size):
-            y_hat_i_t = y_hat_t[i, :].unsqueeze(0)  # [1, trg_vocab_size]
-            s_i_t = s_t[i, :].unsqueeze(0)  # [1, hidden_dim]
+            y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [1, trg_vocab_size]
+            s_i_t = s_t[i].unsqueeze(0)  # [1, hidden_dim]
             encoder_outputs_i = encoder_outputs[:, i, :].unsqueeze(1)  # [src_length, 1, encoder_hidden_dim * 2]
             root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=0, s_n=s_i_t, pre_node=None, y_hat_path=y_hat[:, i, :])
             #  y_hat_path = [trg_length, trg_vocab_size]
