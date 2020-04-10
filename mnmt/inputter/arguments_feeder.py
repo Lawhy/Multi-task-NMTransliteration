@@ -15,7 +15,7 @@ class ArgsFeeder:
                  total_epochs: int, report_interval: int, exp_num: int,
                  multi_task_ratio, valid_out_path, test_out_path,
                  data_container, src_lang, trg_lang, auxiliary_name=None,
-                 quiet_translate=True):
+                 quiet_translate=True, beam_size=1):
         """
         Args:
             encoder_args_feeder (ModuleArgsFeeder):
@@ -69,10 +69,5 @@ class ArgsFeeder:
         self.trg_lang = trg_lang
         self.auxiliary_name = auxiliary_name
         self.quiet_translate = quiet_translate
-
-
-
-
-
-
-
+        # For beam-search
+        self.beam_size = beam_size

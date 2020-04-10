@@ -304,7 +304,8 @@ class Trainer:
                 # eval the validation set for every * steps
                 if (self.train_memory_bank.n_steps % (10 * self.train_memory_bank.report_interval)) == 0:
                     log_print(self.train_log_path, '-----Val------')
-                    valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False)
+                    valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False,
+                                                                         beam_size=self.args_feeder.beam_size)
                     # log_print(self.train_log_path, '-----Tst------')
                     # self.evaluate(is_test=True)
 
@@ -400,16 +401,10 @@ class Trainer:
         eval_results = pd.DataFrame(columns=["Loss", "ACC"], index=["Valid", "Test"])
         eval_results["Loss"] = [valid_loss, test_loss]
         eval_results["ACC"] = [valid_acc, test_acc]
+        # save auxiliary task results
         if self.task == 'Multi':
             eval_results["ACC-aux"] = [valid_acc_aux, test_acc_aux]
-        if enable_acc_act:
-            act = AlternatingCharacterTable(act_path=dict_act_path)
-            valid_out = act.tsv_to_df(self.args_feeder.valid_out_path)
-            test_out = act.tsv_to_df(self.args_feeder.test_out_path)
-            results_valid = act.compute_ACC_ACT(valid_out)
-            results_test = act.compute_ACC_ACT(test_out)
-            eval_results["ACC-ACT"] = [results_valid["acc-act"], results_test["acc-act"]]
-            eval_results["Replaced"] = [results_valid["replaced"], results_test["replaced"]]
+        # acc+ where applicable
         if test_ref_dict is not None:
             test_out_df = pd.read_csv(self.args_feeder.test_out_path, sep='\t')
             test_srcs = []
@@ -432,5 +427,14 @@ class Trainer:
                 if dp["PRED"] in test_ref_dict[dp["SRC"]]:
                     count += 1
             eval_results["ACC+"] = ["NA", count / len(test_out_df)]
+        # acc-act where applicable
+        if enable_acc_act:
+            act = AlternatingCharacterTable(act_path=dict_act_path)
+            valid_out = act.tsv_to_df(self.args_feeder.valid_out_path)
+            test_out = act.tsv_to_df(self.args_feeder.test_out_path)
+            results_valid = act.compute_ACC_ACT(valid_out)
+            results_test = act.compute_ACC_ACT(test_out)
+            eval_results["ACC-ACT"] = [results_valid["acc-act"], results_test["acc-act"]]
+            eval_results["Replaced"] = [results_valid["replaced"], results_test["replaced"]]
         print(eval_results)
         eval_results.to_csv("experiments/exp" + str(self.args_feeder.exp_num) + "/eval.results", sep="\t")

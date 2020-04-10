@@ -1,4 +1,5 @@
 from mnmt.translator import BasicTranslator
+import torch
 
 
 class Seq2SeqTranslator(BasicTranslator):
