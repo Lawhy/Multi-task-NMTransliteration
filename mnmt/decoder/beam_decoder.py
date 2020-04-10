@@ -42,7 +42,7 @@ class BeamDecoder(BasicDecoder):
 
         # decode each sample in the batch
         for i in range(batch_size):
-            y_hat_i_t = y_hat_t .unsqueeze(0)[:, i]  # [1, trg_vocab_size]
+            y_hat_i_t = y_hat_t.unsqueeze(0)[:, i]  # [1, trg_vocab_size]
             print(y_hat_i_t, y_hat_i_t.shape)
 
             if isinstance(s_t, tuple):
