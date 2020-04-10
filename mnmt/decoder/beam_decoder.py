@@ -42,6 +42,7 @@ class BeamDecoder(BasicDecoder):
 
         # decode each sample in the batch
         for i in range(batch_size):
+            print(i)
             y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [batch_size=1]
 
             if isinstance(s_t, tuple):
@@ -98,8 +99,6 @@ class BeamDecoder(BasicDecoder):
                         s_n = s_i_t_full[prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]\
                             .unsqueeze(0)
                     y_hat_path = prev_node.y_hat_path
-                    print(y_hat_path.shape)
-                    print(y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size].shape)
                     y_hat_path[t, :] = \
                         y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
                     new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
@@ -107,7 +106,6 @@ class BeamDecoder(BasicDecoder):
                                                     log_prob_n=prev_node.log_prob_n + 0
                                                     if teacher_force else prev_node.log_prob_n + y_hat_i_t_topk[0, k],
                                                     pre_node=prev_node, y_hat_path=y_hat_path))
-                    print(y_hat_path)
                 batch_nodes = new_batch_nodes
 
             # backtrace
