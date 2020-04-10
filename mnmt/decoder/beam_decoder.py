@@ -87,17 +87,14 @@ class BeamDecoder(BasicDecoder):
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]
                 new_batch_nodes = []
                 for k in range(self.beam_size):
-                    y_hat_n = indices[0, k] if not teacher_force else trg[t, i]
+                    y_hat_n = indices[0, k].unsqueeze(0) if not teacher_force else trg[t, i].unsqueeze(0)
                     prev_node_ind = prev_node_inds[k]
                     prev_node = batch_nodes[prev_node_ind]
                     if isinstance(s_i_t_full, tuple):
-                        s_n = (s_i_t_full[0]
-                               [:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim].unsqueeze(0),
-                               s_i_t_full[1]
-                               [:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim].unsqueeze(0))
+                        s_n = (s_i_t_full[0][:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim],
+                               s_i_t_full[1][:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim])
                     else:
-                        s_n = s_i_t_full[:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]\
-                            .unsqueeze(0)
+                        s_n = s_i_t_full[:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]
                     y_hat_path = prev_node.y_hat_path
                     y_hat_path[t, :] = \
                         y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
