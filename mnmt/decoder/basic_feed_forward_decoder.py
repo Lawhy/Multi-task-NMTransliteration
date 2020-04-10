@@ -37,6 +37,7 @@ class BasicFeedForwardDecoder(nn.Module):
             s_t_minus_1: [batch_size, hidden_dim] or tuple if LSTM
             encoder_outputs: [src_length, batch_size, encoder_hidden_dim * 2]
             mask: [batch_size, src_length]
+            ith_sample:
         """
         y_t = y_t.unsqueeze(0)  # y_t = [1, batch_size]
         y_t = self.embedding(y_t)  # y_t = [1, batch_size, embedding_dim], dropout applied
