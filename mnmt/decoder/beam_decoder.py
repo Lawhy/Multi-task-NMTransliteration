@@ -37,7 +37,13 @@ class BeamDecoder(BasicDecoder):
         """
         batch_size = encoder_outputs.shape[1]
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
-        s_t = inflate(self.init_s_0(encoder_final_state), times=self.beam_size, dim=0)  # [batch * beam, hidden]
+        s_t = self.init_s_0(encoder_final_state)  # [batch, hidden] or tuple
+        if isinstance(s_t, tuple):
+            s_t = (inflate(s_t[0], times=self.beam_size, dim=0),
+                   inflate(s_t[1], times=self.beam_size, dim=0))
+        else:
+            s_t = inflate(s_t, self.beam_size, dim=0)
+        # s_t: [batch * beam, hidden] or tuple
         y_hat_t = inflate(trg[0, :], times=self.beam_size, dim=0)  # [batch * beam]
 
         print(s_t.shape, y_hat_t.shape)
