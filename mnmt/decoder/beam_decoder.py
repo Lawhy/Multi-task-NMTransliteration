@@ -43,6 +43,8 @@ class BeamDecoder(BasicDecoder):
         # ignore the inflated copies to avoid duplicate entries in the top k
         sequence_scores = torch.tensor((batch_size * self.beam_size, 1), dtype=torch.float64).to(self.device)
         sequence_scores.fill_(-float('Inf'))
+        print(sequence_scores.shape)
+        print(torch.tensor([i * self.beam_size for i in range(0, batch_size)]).to(self.device).shape)
         sequence_scores.index_fill_(0,
                                     torch.tensor([i * self.beam_size for i in range(0, batch_size)]).to(self.device),
                                     0.0)
