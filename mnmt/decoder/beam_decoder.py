@@ -73,14 +73,12 @@ class BeamDecoder(BasicDecoder):
             sequence_scores += log_softmax_output.squeeze(1)
             scores, candidates = sequence_scores.view(batch_size, -1).topk(self.beam_size, dim=1)
 
-            # Reshape input = (bk, 1) and sequence_scores = (bk, 1)
-            y_hat_t = (candidates % self.trg_vocab_size).view(batch_size * self.beam_size, 1).squeeze(1)
-            print(y_hat_t.shape)
+            # Reshape input = (bk) and sequence_scores = (bk)
+            y_hat_t = (candidates % self.trg_vocab_size).view(batch_size * self.beam_size)
             # Apply teacher forcing
             if random.random() < teacher_forcing_ratio:
                 y_hat_t = inflate(trg[t], self.beam_size, dim=0)
-            print(y_hat_t.shape)
-            sequence_scores = scores.view(batch_size * self.beam_size, 1)
+            sequence_scores = scores.view(batch_size * self.beam_size)
 
             # Update fields for next time step
             predecessors = (candidates / self.trg_vocab_size + self.pos_index.expand_as(candidates))\
@@ -95,7 +93,7 @@ class BeamDecoder(BasicDecoder):
             stored_scores.append(sequence_scores.clone())
             eos_indices = y_hat_t.data.eq(self.EOS)
             if eos_indices.nonzero().dim() > 0:
-                sequence_scores.data.masked_fill_(eos_indices, -float('inf'))
+                sequence_scores.masked_fill_(eos_indices, -float('inf'))
 
             # Cache results for backtracking
             stored_predecessors.append(predecessors)
