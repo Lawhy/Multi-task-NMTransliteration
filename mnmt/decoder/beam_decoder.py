@@ -70,7 +70,6 @@ class BeamDecoder(BasicDecoder):
             # To get the full sequence scores for the new candidates,
             # add the local scores for t_i to the predecessor scores for t_(i-1)
             sequence_scores = sequence_scores.unsqueeze(1)
-            print(sequence_scores.shape)
             sequence_scores = inflate(sequence_scores, self.trg_vocab_size, 1)
             sequence_scores += log_softmax_output.squeeze(1)
             scores, candidates = sequence_scores.view(batch_size, -1).topk(self.beam_size, dim=1)
@@ -105,7 +104,7 @@ class BeamDecoder(BasicDecoder):
         # Do backtracking to return the optimal values
         output, h_t, h_n, s, l, p = self._backtrack(stored_outputs, stored_hidden,
                                                     stored_predecessors, stored_emitted_symbols,
-                                                    stored_scores, batch_size, self.hidden_dim)
+                                                    stored_scores, batch_size, self.hidden_dim, trg.size(0))
 
         # Build return objects
         decoder_outputs = [step[:, 0, :] for step in output]
@@ -116,7 +115,7 @@ class BeamDecoder(BasicDecoder):
 
         return decoder_outputs
 
-    def _backtrack(self, nw_output, nw_hidden, predecessors, symbols, scores, b, hidden_size):
+    def _backtrack(self, nw_output, nw_hidden, predecessors, symbols, scores, b, hidden_size, max_length):
         """Backtracks over batch to generate optimal k-sequences.
         Args:
             nw_output [(batch*k, vocab_size)] * sequence_length: A Tensor of outputs from network
@@ -152,7 +151,7 @@ class BeamDecoder(BasicDecoder):
             h_n = tuple([torch.zeros(state_size), torch.zeros(state_size)])
         else:
             h_n = torch.zeros(nw_hidden[0].size())
-        l = [[self.rnn.max_length] * self.beam_size for _ in range(b)]  # Placeholder for lengths of top-k sequences
+        l = [[max_length] * self.beam_size for _ in range(b)]  # Placeholder for lengths of top-k sequences
         # Similar to `h_n`
 
         # the last step output of the beams are not sorted
@@ -164,7 +163,7 @@ class BeamDecoder(BasicDecoder):
         batch_eos_found = [0] * b  # the number of EOS found
         # in the backward loop below for each batch
 
-        t = self.rnn.max_length - 1
+        t = max_length - 1
         # initialize the back pointer with the sorted order of the last step beams.
         # add self.pos_index for indexing variable with b*k as the first dimension.
         t_predecessors = (sorted_idx + self.pos_index.expand_as(sorted_idx)).view(b * self.beam_size)
