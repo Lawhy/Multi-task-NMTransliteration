@@ -75,9 +75,11 @@ class BeamDecoder(BasicDecoder):
 
             # Reshape input = (bk, 1) and sequence_scores = (bk, 1)
             y_hat_t = (candidates % self.trg_vocab_size).view(batch_size * self.beam_size, 1)
+            print(y_hat_t.shape)
             # Apply teacher forcing
             if random.random() < teacher_forcing_ratio:
                 y_hat_t = inflate(trg[t], self.beam_size, dim=0)
+            print(y_hat_t.shape)
             sequence_scores = scores.view(batch_size * self.beam_size, 1)
 
             # Update fields for next time step
@@ -88,7 +90,6 @@ class BeamDecoder(BasicDecoder):
                        s_t[1].index_select(0, predecessors.squeeze()))
             else:
                 s_t = s_t.index_select(0, predecessors.squeeze())
-            print("STTTT:", s_t[0].shape)
 
             # Update sequence scores and erase scores for end-of-sentence symbol so that they aren't expanded
             stored_scores.append(sequence_scores.clone())
