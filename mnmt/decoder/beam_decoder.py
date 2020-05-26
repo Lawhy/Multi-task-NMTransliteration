@@ -69,7 +69,7 @@ class BeamDecoder(BasicDecoder):
 
             # To get the full sequence scores for the new candidates,
             # add the local scores for t_i to the predecessor scores for t_(i-1)
-            sequence_scores.unsqueeze(1)
+            sequence_scores = sequence_scores.unsqueeze(1)
             print(sequence_scores.shape)
             sequence_scores = inflate(sequence_scores, self.trg_vocab_size, 1)
             sequence_scores += log_softmax_output.squeeze(1)
