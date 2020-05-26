@@ -16,6 +16,7 @@ class BasicFeedForwardDecoder(nn.Module):
         super().__init__()
 
         self.attrs = args_feeder.decoder_args_feeders[decoder_index]  # decoder's attributes
+        self.batch_size = args_feeder.batch_size
         self.attention = attention
         self.embedding = self.attrs.basic_embedding()
         rnn_input_dim = self.attrs.embedding_dim + (args_feeder.encoder_args_feeder.hidden_dim * 2)

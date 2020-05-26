@@ -16,7 +16,7 @@ class BeamDecoder(BasicDecoder):
         super().__init__(feed_forward_decoder, bridge_layer, device)
         self.beam_size = beam_size
         self.hidden_dim = self.feed_forward_decoder.attrs.hidden_dim
-        self.batch_size = self.feed_forward_decoder.attrs.batch_size
+        self.batch_size = self.feed_forward_decoder.batch_size
         self.pos_index = (torch.tensor(range(self.batch_size)) * self.beam_size).to(self.device).view(-1, 1)
         self.EOS = self.feed_forward_decoder.attrs.trg_eos_idx
 
@@ -242,11 +242,12 @@ class BeamDecoder(BasicDecoder):
         output = [step.index_select(0, re_sorted_idx).view(b, self.beam_size, -1) for step in reversed(output)]
         p = [step.index_select(0, re_sorted_idx).view(b, self.beam_sizek, -1) for step in reversed(p)]
         if lstm:
-            h_t = [tuple([h.index_select(1, re_sorted_idx).view(-1, b, self.beam_size, hidden_size) for h in step]) for step in
-                   reversed(h_t)]
+            h_t = [tuple([h.index_select(1, re_sorted_idx).view(-1, b, self.beam_size, hidden_size) for h in step])
+                   for step in reversed(h_t)]
             h_n = tuple([h.index_select(1, re_sorted_idx.data).view(-1, b, self.beam_size, hidden_size) for h in h_n])
         else:
-            h_t = [step.index_select(1, re_sorted_idx).view(-1, b, self.beam_size, hidden_size) for step in reversed(h_t)]
+            h_t = [step.index_select(1, re_sorted_idx).view(-1, b, self.beam_size, hidden_size)
+                   for step in reversed(h_t)]
             h_n = h_n.index_select(1, re_sorted_idx.data).view(-1, b, self.beam_size, hidden_size)
         s = s.data
 
