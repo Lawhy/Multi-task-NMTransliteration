@@ -46,7 +46,7 @@ class BeamDecoder(BasicDecoder):
         # s_t: [batch * beam, hidden] or tuple
         y_hat_t = inflate(trg[0, :], times=self.beam_size, dim=0)  # [batch * beam]
 
-        print(s_t.shape, y_hat_t.shape)
+        print(s_t[0].shape, y_hat_t.shape)
 
         # decode each sample in the batch
         for i in range(batch_size):
