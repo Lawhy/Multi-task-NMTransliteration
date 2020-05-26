@@ -43,8 +43,6 @@ class BeamDecoder(BasicDecoder):
         # ignore the inflated copies to avoid duplicate entries in the top k
         sequence_scores = torch.zeros((batch_size * self.beam_size, 1), dtype=torch.float64).to(self.device)
         sequence_scores.fill_(-float('Inf'))
-        print(sequence_scores.shape)
-        print(torch.tensor([i * self.beam_size for i in range(0, batch_size)]).to(self.device).shape)
         sequence_scores.index_fill_(0,
                                     torch.tensor([i * self.beam_size for i in range(0, batch_size)]).to(self.device),
                                     0.0)
@@ -85,6 +83,7 @@ class BeamDecoder(BasicDecoder):
             # Update fields for next time step
             predecessors = (candidates / self.trg_vocab_size + self.pos_index.expand_as(candidates))\
                 .view(batch_size * self.beam_size, 1)
+            print(predecessors.shape, predecessors.squeeze().shape)
             if isinstance(s_t, tuple):
                 s_t = tuple([h.index_select(1, predecessors.squeeze()) for h in s_t])
             else:
