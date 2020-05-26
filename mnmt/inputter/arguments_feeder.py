@@ -15,7 +15,7 @@ class ArgsFeeder:
                  total_epochs: int, report_interval: int, exp_num: int,
                  multi_task_ratio, valid_out_path, test_out_path,
                  data_container, src_lang, trg_lang, auxiliary_name=None,
-                 quiet_translate=True, beam_size=1):
+                 quiet_translate=True, beam_size=1, trg_eos_idx=None):
         """
         Args:
             encoder_args_feeder (ModuleArgsFeeder):
@@ -71,3 +71,5 @@ class ArgsFeeder:
         self.quiet_translate = quiet_translate
         # For beam-search
         self.beam_size = beam_size
+        # For early ending of searching
+        self.trg_eos_idx = trg_eos_idx
