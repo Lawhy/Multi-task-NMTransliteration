@@ -51,3 +51,36 @@ def log_print(log_path, statement):
     print(statement)
     with open(log_path, 'a+') as f:
         f.write(f'{statement}\n')
+
+
+def inflate(tensor, times, dim):
+    """
+    Given a tensor, 'inflates' it along the given dimension by replicating each slice specified number of times (in-place)
+    Args:
+        tensor: A :class:`Tensor` to inflate
+        times: number of repetitions
+        dim: axis for inflation (default=0)
+    Returns:
+        A :class:`Tensor`
+    Examples::
+        >> a = torch.LongTensor([[1, 2], [3, 4]])
+        >> a
+        1   2
+        3   4
+        [torch.LongTensor of size 2x2]
+        >> b = ._inflate(a, 2, dim=1)
+        >> b
+        1   2   1   2
+        3   4   3   4
+        [torch.LongTensor of size 2x4]
+        >> c = _inflate(a, 2, dim=0)
+        >> c
+        1   2
+        3   4
+        1   2
+        3   4
+        [torch.LongTensor of size 4x2]
+    """
+    repeat_dims = [1] * tensor.dim()
+    repeat_dims[dim] = times
+    return tensor.repeat(*repeat_dims)

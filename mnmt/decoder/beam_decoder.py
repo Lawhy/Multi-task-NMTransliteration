@@ -1,4 +1,5 @@
 from mnmt.decoder import BasicDecoder
+from mnmt.trainer.utils import inflate
 import random
 import torch
 
@@ -36,12 +37,14 @@ class BeamDecoder(BasicDecoder):
         """
         batch_size = encoder_outputs.shape[1]
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
-        s_t = self.init_s_0(encoder_final_state)
+        s_t = inflate(self.init_s_0(encoder_final_state), times=self.beam_size, dim=0)  # [batch * beam, hidden]
+        y_hat_t = inflate(trg[0, :], times=self.beam_size, dim=0)  # [batch * beam]
 
-        y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
+        print(s_t.shape, y_hat_t.shape)
 
         # decode each sample in the batch
         for i in range(batch_size):
+            break
             y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [batch_size=1]
 
             if isinstance(s_t, tuple):
