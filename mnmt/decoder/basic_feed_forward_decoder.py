@@ -30,7 +30,7 @@ class BasicFeedForwardDecoder(nn.Module):
             nn.LogSoftmax(dim=1)
         )
 
-    def forward(self, y_t, s_t_minus_1, encoder_outputs, mask, ith_sample=None):
+    def forward(self, y_t, s_t_minus_1, encoder_outputs, mask):
         """s_t = Decoder(d(y_t), w_t, s_{t-1}) decoder hidden state for time t
             y_t_plus_1_hat = f(d(y_t), w_t, s_t) decoder output for time t
 
@@ -39,7 +39,6 @@ class BasicFeedForwardDecoder(nn.Module):
             s_t_minus_1: [batch_size, hidden_dim] or tuple if LSTM
             encoder_outputs: [src_length, batch_size, encoder_hidden_dim * 2]
             mask: [batch_size, src_length]
-            ith_sample:
         """
         y_t = y_t.unsqueeze(0)  # y_t = [1, batch_size]
         y_t = self.embedding(y_t)  # y_t = [1, batch_size, embedding_dim], dropout applied
@@ -47,10 +46,6 @@ class BasicFeedForwardDecoder(nn.Module):
         # context = [1, batch_size, encoder_hidden_dim * 2]
         # rnn_output = [1, batch_size, hidden_dim]
         # s_t = [n_layers, batch_size, hidden_dim], tuple for LSTM
-
-        # for beam search setting
-        if ith_sample is not None:
-            mask = mask[ith_sample, :].unsqueeze(0)  # match batch-size 1
 
         if isinstance(s_t_minus_1, tuple):  # LSTM
             scores, context = self.attention(s_t_minus_1[0], encoder_outputs, mask)
