@@ -41,7 +41,7 @@ class BeamDecoder(BasicDecoder):
 
         # Initialize the scores; for the first step,
         # ignore the inflated copies to avoid duplicate entries in the top k
-        sequence_scores = torch.zeros((batch_size * self.beam_size, 1), dtype=torch.float64).to(self.device)
+        sequence_scores = torch.zeros(batch_size * self.beam_size, dtype=torch.float64).to(self.device)
         sequence_scores.fill_(-float('Inf'))
         sequence_scores.index_fill_(0,
                                     torch.tensor([i * self.beam_size for i in range(0, batch_size)]).to(self.device),
@@ -69,6 +69,7 @@ class BeamDecoder(BasicDecoder):
 
             # To get the full sequence scores for the new candidates,
             # add the local scores for t_i to the predecessor scores for t_(i-1)
+            sequence_scores.unsqueeze(1)
             sequence_scores = inflate(sequence_scores, self.trg_vocab_size, 1)
             sequence_scores += log_softmax_output.squeeze(1)
             scores, candidates = sequence_scores.view(batch_size, -1).topk(self.beam_size, dim=1)
