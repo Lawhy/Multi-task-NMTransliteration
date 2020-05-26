@@ -83,9 +83,10 @@ class BeamDecoder(BasicDecoder):
             # Update fields for next time step
             predecessors = (candidates / self.trg_vocab_size + self.pos_index.expand_as(candidates))\
                 .view(batch_size * self.beam_size, 1)
-            print(predecessors.shape, predecessors.squeeze().shape)
+            print(predecessors.shape, s_t[0].shape)
             if isinstance(s_t, tuple):
-                s_t = tuple([h.index_select(1, predecessors.squeeze()) for h in s_t])
+                s_t = (s_t[0].index_select(1, predecessors.squeeze()),
+                       s_t[1].index_select(1, predecessors.squeeze()))
             else:
                 s_t = s_t.index_select(1, predecessors.squeeze())
 
