@@ -55,7 +55,7 @@ class BeamDecoder(BasicDecoder):
         stored_hidden = list()
 
         # inflate encoder outputs and mask
-        inflated_encoder_outputs = inflate(encoder_outputs, self.beam_size, dim=1)
+        inflated_encoder_outputs = encoder_outputs.repeat(1, self.beam_size, 1)
         inflated_mask = inflate(mask, self.beam_size, dim=0)
 
         for t in range(1, trg.size(0)):
