@@ -88,7 +88,7 @@ class BeamDecoder(BasicDecoder):
                        s_t[1].index_select(0, predecessors.squeeze()))
             else:
                 s_t = s_t.index_select(0, predecessors.squeeze())
-            print("STTTT:", s_t.shape)
+            print("STTTT:", s_t[0].shape)
 
             # Update sequence scores and erase scores for end-of-sentence symbol so that they aren't expanded
             stored_scores.append(sequence_scores.clone())
