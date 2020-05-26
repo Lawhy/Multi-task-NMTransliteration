@@ -18,7 +18,7 @@ class BeamDecoder(BasicDecoder):
         self.hidden_dim = self.feed_forward_decoder.attrs.hidden_dim
         self.batch_size = self.feed_forward_decoder.batch_size
         self.pos_index = (torch.tensor(range(self.batch_size)) * self.beam_size).to(self.device).view(-1, 1)
-        self.EOS = self.feed_forward_decoder.attrs.trg_eos_idx
+        self.EOS = self.feed_forward_decoder.trg_eos_idx
 
     def forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
         """
