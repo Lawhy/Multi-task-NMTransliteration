@@ -200,7 +200,7 @@ class BeamDecoder(BasicDecoder):
             #       2. Otherwise, replace the ended sequence with the lowest sequence
             #       score with the new ended sequence
             #
-            eos_indices = symbols[t].data.squeeze(1).eq(self.EOS).nonzero()
+            eos_indices = symbols[t].data.eq(self.EOS).nonzero()
             if eos_indices.dim() > 0:
                 for i in range(eos_indices.size(0) - 1, -1, -1):
                     # Indices of the EOS symbol for both variables
