@@ -82,7 +82,7 @@ class BeamDecoder(BasicDecoder):
             sequence_scores = scores.view(batch_size * self.beam_size)
 
             # Update fields for next time step
-            predecessors = (candidates / self.trg_vocab_size + self.pos_index.expand_as(candidates))\
+            predecessors = (candidates / self.trg_vocab_size + self.pos_index.expand_as(candidates)) \
                 .view(batch_size * self.beam_size, 1)
             if isinstance(s_t, tuple):
                 s_t = (s_t[0].index_select(0, predecessors.squeeze()),
@@ -122,7 +122,8 @@ class BeamDecoder(BasicDecoder):
             nw_hidden [(num_layers, batch*k, hidden_size)] * sequence_length: A Tensor of hidden states from network
             predecessors [(batch*k)] * sequence_length: A Tensor of predecessors
             symbols [(batch*k)] * sequence_length: A Tensor of predicted tokens
-            scores [(batch*k)] * sequence_length: A Tensor containing sequence scores for every token t = [0, ... , seq_len - 1]
+            scores [(batch*k)] * sequence_length: A Tensor containing sequence scores for every token t =
+            [0, ... , seq_len - 1]
             b: Size of the batch
             hidden_size: Size of the hidden state
         Returns:
@@ -167,8 +168,10 @@ class BeamDecoder(BasicDecoder):
         # initialize the back pointer with the sorted order of the last step beams.
         # add self.pos_index for indexing variable with b*k as the first dimension.
         t_predecessors = (sorted_idx + self.pos_index.expand_as(sorted_idx)).view(b * self.beam_size)
+
         while t >= 0:
             # Re-order the variables with the back pointer
+            print(t)
             current_output = nw_output[t].index_select(0, t_predecessors)
             if lstm:
                 current_hidden = tuple([h.index_select(1, t_predecessors) for h in nw_hidden[t]])
