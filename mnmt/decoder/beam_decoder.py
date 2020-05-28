@@ -173,11 +173,11 @@ class BeamDecoder(BasicDecoder):
             # Re-order the variables with the back pointer
             print(t)
             current_output = nw_output[t].index_select(0, t_predecessors)
-            print(nw_hidden[t][0].shape, t_predecessors.shape)
             if lstm:
                 current_hidden = tuple([h.index_select(0, t_predecessors) for h in nw_hidden[t]])
             else:
                 current_hidden = nw_hidden[t].index_select(0, t_predecessors)
+            print(symbols[t].shape)
             current_symbol = symbols[t].index_select(0, t_predecessors)
             # Re-order the back pointer of the previous step with the back pointer of
             # the current step
