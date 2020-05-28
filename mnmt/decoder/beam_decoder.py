@@ -164,7 +164,7 @@ class BeamDecoder(BasicDecoder):
         batch_eos_found = [0] * b  # the number of EOS found
         # in the backward loop below for each batch
 
-        t = max_length - 1
+        t = max_length - 2
         # initialize the back pointer with the sorted order of the last step beams.
         # add self.pos_index for indexing variable with b*k as the first dimension.
         t_predecessors = (sorted_idx + self.pos_index.expand_as(sorted_idx)).view(b * self.beam_size)
