@@ -95,24 +95,6 @@ class BeamDecoder(BasicDecoder):
                 # we use the same subscript t for y and s here because y starts from 1, s starts from 0
 
                 # explore beam-size * vocab-size possibilities
-                # y_hat_i_t_full = torch.zeros(1, self.trg_vocab_size * self.beam_size).to(self.device)
-                # if isinstance(s_i_t, tuple):
-                #     s_i_t_full = (torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device),
-                #                   torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device))
-                # else:
-                #     s_i_t_full = torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device)
-                #
-                # for j in range(len(batch_nodes)):
-                #     node = batch_nodes[j]
-                #     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
-                #                                                         encoder_outputs_i, mask[i])
-                #     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
-                #     y_hat_i_t_full[:, j * self.trg_vocab_size: (j + 1) * self.trg_vocab_size] = y_hat_i_t_j
-                #     if isinstance(s_i_t_full, tuple):
-                #         s_i_t_full[0][:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j[0]
-                #         s_i_t_full[1][:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j[1]
-                #     else:
-                #         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
                 y_hat_i_t_full = y_hat_i_t.clone().repeat(self.beam_size)
                 if isinstance(s_i_t, tuple):
                     s_i_t_full = (torch.zeros(self.beam_size, self.hidden_dim).to(self.device),
