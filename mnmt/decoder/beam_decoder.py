@@ -71,7 +71,7 @@ class BeamDecoder(BasicDecoder):
         # indexing: i for batch, t for time-step, j for node
         for i in range(batch_size):
             y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [1, batch_size=1], all <sos> indeed
-            assert tuple(y_hat_i_t.shape) == (1, 1)
+            print(y_hat_i_t.shape)
 
             if isinstance(s_t, tuple):
                 s_i_t = (s_t[0][i].unsqueeze(0), s_t[1][i].unsqueeze(0))  # [1, hidden_dim], tuple
@@ -115,7 +115,8 @@ class BeamDecoder(BasicDecoder):
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
                 new_batch_nodes = []
                 for k in range(self.beam_size):
-                    y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  #
+                    y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  # fix the index
+                    print(y_hat_n.shape)
                     prev_node_ind = prev_node_inds[k]
                     prev_node = batch_nodes[prev_node_ind]
                     if isinstance(s_i_t_full, tuple):
