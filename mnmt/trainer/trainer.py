@@ -286,6 +286,7 @@ class Trainer:
             running_loss = epoch_loss / (i + 1)
 
             self.train_memory_bank.n_steps += 1
+            print("preenter")
 
             # print every ${report_interval} batches (${report_interval} steps)
             if self.train_memory_bank.n_steps % self.train_memory_bank.report_interval == 0:
