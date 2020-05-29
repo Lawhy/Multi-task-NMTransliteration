@@ -102,7 +102,6 @@ class BeamDecoder(BasicDecoder):
                     node = batch_nodes[j]
                     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
                                                                         encoder_outputs_i, mask[i])
-                    print(y_hat_i_t_j.shape, s_i_t_j[0].shape, y_hat_i_t_full.shape)
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
                     y_hat_i_t_full[:, j * self.trg_vocab_size: (j + 1) * self.trg_vocab_size] = y_hat_i_t_j
                     if isinstance(s_i_t_full, tuple):
@@ -112,6 +111,7 @@ class BeamDecoder(BasicDecoder):
                         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
+                print(indices.shape)
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]
                 print(prev_node_inds)
                 new_batch_nodes = []
