@@ -71,7 +71,6 @@ class BeamDecoder(BasicDecoder):
         # indexing: i for batch, t for time-step, j for node
         for i in range(batch_size):
             y_hat_i_t = y_hat_t[i].unsqueeze(0)  # torch.Size([1]), all <sos> indeed
-            print(y_hat_i_t.shape)
 
             if isinstance(s_t, tuple):
                 s_i_t = (s_t[0][i].unsqueeze(0), s_t[1][i].unsqueeze(0))  # [1, hidden_dim], tuple
@@ -89,7 +88,6 @@ class BeamDecoder(BasicDecoder):
                 # each time using current y_t, attention, and previous s_{t-1}
                 # to compute s_t and predict y_{t+1}_hat
                 # we use the same subscript t for y and s here because y starts from 1, s starts from 0
-                print(t)
 
                 # explore beam-size * vocab-size possibilities
                 y_hat_i_t_full = torch.zeros(1, self.trg_vocab_size * self.beam_size).to(self.device)
@@ -140,6 +138,7 @@ class BeamDecoder(BasicDecoder):
                 for node in batch_nodes:
                     if node.log_prob_n > max_log_prob:
                         end_node = node
+                print(y_hat.shape, end_node.y_hat_path.shape)
                 y_hat[:, i, :] = end_node.y_hat_path
 
         return y_hat
