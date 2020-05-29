@@ -107,7 +107,7 @@ class BeamDecoder(BasicDecoder):
                                                     stored_scores, batch_size, self.hidden_dim, trg.size(0))
 
         # Build return objects
-        for t in range(1, len(y_hat.shape[0])):
+        for t in range(1, y_hat.shape[0]):
             y_hat[t] = output[t]
 
         return y_hat
