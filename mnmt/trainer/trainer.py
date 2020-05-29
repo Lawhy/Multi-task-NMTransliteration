@@ -325,7 +325,6 @@ class Trainer:
         correct = 0
         correct_aux = 0
         iterator = self.valid_iter if not is_test else self.test_iter
-        print("BATCH SIZE: ", iterator.batch_size)
 
         with torch.no_grad():
 
