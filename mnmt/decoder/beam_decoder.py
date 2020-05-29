@@ -232,7 +232,7 @@ class BeamDecoder(BasicDecoder):
                     else:
                         current_hidden[:, res_idx] = nw_hidden[t][:, idx[0]]
                         h_n[:, res_idx] = nw_hidden[t][:, idx[0]].data
-                    current_symbol[res_idx, :] = symbols[t][idx[0]]
+                    current_symbol[res_idx] = symbols[t][idx[0]]
                     s[b_idx, res_k_idx] = scores[t][idx[0]].data[0]
                     l[b_idx][res_k_idx] = t + 1
 
