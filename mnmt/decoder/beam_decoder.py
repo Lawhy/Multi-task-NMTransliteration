@@ -73,7 +73,6 @@ class BeamDecoder(BasicDecoder):
 
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
-        print(batch_size)
         for i in range(batch_size):
             y_hat_i_t = y_hat_t[i].unsqueeze(0)  # torch.Size([1]), all <sos> indeed
 
