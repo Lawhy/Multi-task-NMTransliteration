@@ -18,7 +18,7 @@ class BeamDecoder(BasicDecoder):
         self.hidden_dim = self.feed_forward_decoder.attrs.hidden_dim
         self.pos_index = None
         self.EOS = self.feed_forward_decoder.trg_eos_idx
-        self.train = is_training
+        self.is_training = is_training
 
     def training_forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
         """
@@ -56,7 +56,7 @@ class BeamDecoder(BasicDecoder):
             mask: [batch_size, src_length], mask out <pad> for attention
             teacher_forcing_ratio: probability of applying teacher forcing or not
         """
-        if self.train:
+        if self.is_training:
             return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
 
         # Beam decoding occurs during evaluation
