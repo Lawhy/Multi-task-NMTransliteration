@@ -112,7 +112,7 @@ class BeamDecoder(BasicDecoder):
                 #         s_i_t_full[1][:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j[1]
                 #     else:
                 #         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
-                y_hat_i_t_full = inflate(y_hat_i_t.clone().unsqueeze(0), self.beam_size, dim=0)
+                y_hat_i_t_full = y_hat_i_t.clone().repeat(self.beam_size)
                 print(y_hat_i_t_full.shape)
                 if isinstance(s_i_t, tuple):
                     s_i_t_full = (torch.zeros(self.beam_size, self.hidden_dim).to(self.device),
