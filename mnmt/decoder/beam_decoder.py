@@ -65,9 +65,7 @@ class BeamDecoder(BasicDecoder):
         batch_size = encoder_outputs.shape[1]
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         s_t = self.init_s_0(encoder_final_state)
-
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
-        print(y_hat_t.shape)
 
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
@@ -83,7 +81,7 @@ class BeamDecoder(BasicDecoder):
             root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=0, s_n=s_i_t, pre_node=None,
                                  y_hat_path=y_hat[:, i, :].unsqueeze(1))
             #  y_hat_path = [trg_length, 1, trg_vocab_size]
-            batch_nodes = [root_node] * 10
+            batch_nodes = [root_node] * self.beam_size
 
             for t in range(1, trg.size(0)):
                 # start from 1 as the first column are zeros that represent <sos>
