@@ -60,7 +60,6 @@ class BeamDecoder(BasicDecoder):
             return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
 
         # Beam decoding occurs during evaluation
-        print("Start Beam Search ...")
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         batch_size = encoder_outputs.shape[1]
         self.pos_index = (torch.tensor(range(batch_size)) * self.beam_size).to(self.device).view(-1, 1)

@@ -314,6 +314,11 @@ class Trainer:
                     if self.task == 'Multi':
                         self.update_aux(valid_acc_aux)
                     self.scheduler.step(valid_acc)  # scheduled on validation acc
+
+                    # back to teacher forcing (turn off beam decoding)
+                    if self.args_feeder.beam_size > 1:
+                        self.model.decoder.is_training = True  # apply beam search
+
                     self.model.train()
 
         return epoch_loss / len(self.train_iter)
