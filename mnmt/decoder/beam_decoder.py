@@ -16,8 +16,7 @@ class BeamDecoder(BasicDecoder):
         super().__init__(feed_forward_decoder, bridge_layer, device)
         self.beam_size = beam_size
         self.hidden_dim = self.feed_forward_decoder.attrs.hidden_dim
-        self.batch_size = self.feed_forward_decoder.batch_size
-        self.pos_index = (torch.tensor(range(self.batch_size)) * self.beam_size).to(self.device).view(-1, 1)
+        self.pos_index = None
         self.EOS = self.feed_forward_decoder.trg_eos_idx
 
     def forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
@@ -31,6 +30,7 @@ class BeamDecoder(BasicDecoder):
         """
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         batch_size = encoder_outputs.shape[1]
+        self.pos_index = (torch.tensor(range(batch_size)) * self.beam_size).to(self.device).view(-1, 1)
         s_t = self.init_s_0(encoder_final_state)  # [batch, hidden] or tuple
         if isinstance(s_t, tuple):
             s_t = (inflate(s_t[0], times=self.beam_size, dim=0),
