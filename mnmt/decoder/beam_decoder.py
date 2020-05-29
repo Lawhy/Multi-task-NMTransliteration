@@ -92,7 +92,7 @@ class BeamDecoder(BasicDecoder):
 
             # Update sequence scores and erase scores for end-of-sentence symbol so that they aren't expanded
             stored_scores.append(sequence_scores.clone())
-            eos_indices = y_hat_t.data.eq(self.EOS)
+            eos_indices = y_hat_t.data.eq(self.EOS).unsqueeze(1)
             if eos_indices.nonzero().dim() > 0:
                 sequence_scores.data.masked_fill_(eos_indices, -float('inf'))
 
