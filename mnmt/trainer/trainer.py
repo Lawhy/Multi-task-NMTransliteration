@@ -327,6 +327,8 @@ class Trainer:
         iterator = self.valid_iter if not is_test else self.test_iter
         log_print(self.train_log_path,
                   "Beam size: {}".format(self.args_feeder.beam_size))
+        if self.args_feeder.beam_size > 1:
+            self.model.decoder.train = False  # apply beam search
 
         with torch.no_grad():
 
