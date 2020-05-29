@@ -260,7 +260,7 @@ class Trainer:
         log_print(self.train_log_path,
                   "[Train]: Current Teacher Forcing Ratio: {:.3f}".format(self.model.teacher_forcing_ratio))
         if self.args_feeder.beam_size > 1:
-            if self.task == 'Multi':
+            if self.task == "Multi":
                 for de in self.model.decoder_list:
                     de.is_training = True
             else:
@@ -322,7 +322,7 @@ class Trainer:
 
                     # back to teacher forcing (turn off beam decoding)
                     if self.args_feeder.beam_size > 1:
-                        if self.task == 'Multi':
+                        if self.task == "Multi":
                             for de in self.model.decoder_list:
                                 de.is_training = True
                         else:
@@ -344,7 +344,7 @@ class Trainer:
         log_print(self.train_log_path,
                   "Beam size: {}".format(self.args_feeder.beam_size))
         if self.args_feeder.beam_size > 1:
-            if self.task == 'Multi':
+            if self.task == "Multi":
                 for de in self.model.decoder_list:
                     de.is_training = False
             else:
