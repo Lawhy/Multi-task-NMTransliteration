@@ -133,25 +133,26 @@ class Trainer:
 
                 self.tfr = max(1 - (float(10 + epoch * 1.5) / 50), 0.2)
                 train_loss = self.train()
-                valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False)
+                # if epoch + 1 % 10 == 0:
+                #     valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False)
 
                 end_time = time.time()
 
                 epoch_mins, epoch_secs = self.epoch_time(start_time, end_time)
 
-                self.update(valid_loss, valid_acc)
-                if self.task == "Multi":
-                    self.update_aux(valid_acc_aux)
+                # self.update(valid_loss, valid_acc)
+                # if self.task == "Multi":
+                #   self.update_aux(valid_acc_aux)
 
-                self.scheduler.step(valid_acc)  # update learning rate
+                # self.scheduler.step(valid_acc)  # update learning rate
 
                 log_print(self.train_log_path,
                           f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
                 log_print(self.train_log_path,
                           f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
-                log_print(self.train_log_path, f'\t Val. Loss: {valid_loss:.3f} | '
-                                               f'Val. Acc: {valid_acc:.3f} | '
-                                               f'Val. PPL: {math.exp(valid_loss):7.3f}')
+                # log_print(self.train_log_path, f'\t Val. Loss: {valid_loss:.3f} | '
+                #                                f'Val. Acc: {valid_acc:.3f} | '
+                #                                f'Val. PPL: {math.exp(valid_loss):7.3f}')
         except KeyboardInterrupt:
             log_print(self.train_log_path, "Exiting loop")
 
