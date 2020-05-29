@@ -277,6 +277,7 @@ class Trainer:
             else:
                 output = self.model(src, src_lens, trg)
                 loss = self.compute_loss(output, trg)
+            print(loss)
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1)  # clip = 1
@@ -284,6 +285,7 @@ class Trainer:
 
             epoch_loss += loss.item()
             running_loss = epoch_loss / (i + 1)
+            print(loss)
 
             self.train_memory_bank.n_steps += 1
 
