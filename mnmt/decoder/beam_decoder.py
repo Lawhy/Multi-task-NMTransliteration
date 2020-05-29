@@ -134,13 +134,12 @@ class BeamDecoder(BasicDecoder):
                     assert s_n[0].shape[1] == self.hidden_dim
                 batch_nodes = new_batch_nodes
 
-            # backtrace
-            max_log_prob = -float('inf')
-            end_node = None
-            for node in batch_nodes:
-                if node.log_prob_n > max_log_prob:
-                    end_node = node
-            print(end_node.y_hat_path.shape)
-            y_hat[:, i, :] = end_node.y_hat_path
+                # backtrace
+                max_log_prob = -float('inf')
+                end_node = None
+                for node in batch_nodes:
+                    if node.log_prob_n > max_log_prob:
+                        end_node = node
+                y_hat[:, i, :] = end_node.y_hat_path
 
         return y_hat
