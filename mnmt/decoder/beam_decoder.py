@@ -108,7 +108,7 @@ class BeamDecoder(BasicDecoder):
 
         # Build return objects
         for t in range(1, y_hat.shape[0]):
-            y_hat[t] = output[t][:, 0, :]
+            y_hat[t] = output[t-1][:, 0, :]
 
         return y_hat
 
