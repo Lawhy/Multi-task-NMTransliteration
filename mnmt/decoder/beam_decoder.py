@@ -107,14 +107,10 @@ class BeamDecoder(BasicDecoder):
                                                     stored_scores, batch_size, self.hidden_dim, trg.size(0))
 
         # Build return objects
-        print(y_hat.shape[0], len(output))
-        decoder_outputs = [step[:, 0, :] for step in output]
-        # if isinstance(h_n, tuple):
-        #     decoder_hidden = tuple([h[:, :, 0, :] for h in h_n])
-        # else:
-        #     decoder_hidden = h_n[:, :, 0, :]
+        for t in range(1, len(y_hat.shape[0])):
+            y_hat[t] = output[t]
 
-        return decoder_outputs
+        return y_hat
 
     def _backtrack(self, nw_output, nw_hidden, predecessors, symbols, scores, b, hidden_size, max_length):
         """Backtracks over batch to generate optimal k-sequences.
