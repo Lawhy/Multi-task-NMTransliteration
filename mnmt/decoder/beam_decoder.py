@@ -79,7 +79,7 @@ class BeamDecoder(BasicDecoder):
             # Apply teacher forcing
             if random.random() < teacher_forcing_ratio:
                 y_hat_t = inflate(trg[t], self.beam_size, dim=0)
-            sequence_scores = scores.view(batch_size * self.beam_size)
+            sequence_scores = scores.view(batch_size * self.beam_size, 1)
 
             # Update fields for next time step
             predecessors = (candidates / self.trg_vocab_size + self.pos_index.expand_as(candidates)) \
@@ -167,6 +167,7 @@ class BeamDecoder(BasicDecoder):
         sorted_score, sorted_idx = scores[-1].view(b, self.beam_size).topk(self.beam_size)
         # initialize the sequence scores with the sorted last step beam scores
         s = sorted_score.clone()
+        print(s.shape)
 
         batch_eos_found = [0] * b  # the number of EOS found
         # in the backward loop below for each batch
