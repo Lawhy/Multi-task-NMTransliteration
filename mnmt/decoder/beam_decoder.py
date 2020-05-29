@@ -184,7 +184,7 @@ class BeamDecoder(BasicDecoder):
                 current_hidden = tuple([h.index_select(1, t_predecessors) for h in nw_hidden[t]])
             else:
                 current_hidden = nw_hidden[t].index_select(1, t_predecessors)
-            print(symbols[t].shape)
+            print(current_hidden.shape)
             current_symbol = symbols[t].index_select(0, t_predecessors)
             # Re-order the back pointer of the previous step with the back pointer of
             # the current step
@@ -226,13 +226,13 @@ class BeamDecoder(BasicDecoder):
                     t_predecessors[res_idx] = predecessors[t][idx[0]]
                     current_output[res_idx, :] = nw_output[t][idx[0], :]
                     if lstm:
-                        current_hidden[0][:, res_idx, :] = nw_hidden[t][0][:, idx[0], :]
-                        current_hidden[1][:, res_idx, :] = nw_hidden[t][1][:, idx[0], :]
-                        h_n[0][:, res_idx, :] = nw_hidden[t][0][:, idx[0], :].data
-                        h_n[1][:, res_idx, :] = nw_hidden[t][1][:, idx[0], :].data
+                        current_hidden[0][res_idx, :] = nw_hidden[t][0][idx[0], :]
+                        current_hidden[1][res_idx, :] = nw_hidden[t][1][idx[0], :]
+                        h_n[0][res_idx, :] = nw_hidden[t][0][idx[0], :].data
+                        h_n[1][res_idx, :] = nw_hidden[t][1][idx[0], :].data
                     else:
-                        current_hidden[:, res_idx, :] = nw_hidden[t][:, idx[0], :]
-                        h_n[:, res_idx, :] = nw_hidden[t][:, idx[0], :].data
+                        current_hidden[res_idx, :] = nw_hidden[t][idx[0], :]
+                        h_n[res_idx, :] = nw_hidden[t][idx[0], :].data
                     current_symbol[res_idx, :] = symbols[t][idx[0]]
                     s[b_idx, res_k_idx] = scores[t][idx[0]].data[0]
                     l[b_idx][res_k_idx] = t + 1
