@@ -67,6 +67,7 @@ class BeamDecoder(BasicDecoder):
         s_t = self.init_s_0(encoder_final_state)
 
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
+        print(y_hat_t.shape)
 
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
