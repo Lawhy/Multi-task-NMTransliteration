@@ -84,6 +84,7 @@ class BeamDecoder(BasicDecoder):
             sequence_scores = scores.view(batch_size * self.beam_size, 1)
 
             # Update fields for next time step
+            print(candidates.shape, self.pos_index.shape)
             predecessors = (candidates / self.trg_vocab_size + self.pos_index.expand_as(candidates)) \
                 .view(batch_size * self.beam_size, 1)
             if isinstance(s_t, tuple):
