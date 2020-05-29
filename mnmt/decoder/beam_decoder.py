@@ -69,8 +69,9 @@ class BeamDecoder(BasicDecoder):
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
 
         # decode each sample in the batch
+        # indexing: i for batch, t for time-step, j for node
         for i in range(batch_size):
-            y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [batch_size=1]
+            y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [batch_size=1, hidden_dim], all <sos> indeed
 
             if isinstance(s_t, tuple):
                 s_i_t = (s_t[0][i].unsqueeze(0), s_t[1][i].unsqueeze(0))  # [1, hidden_dim], tuple
@@ -80,7 +81,7 @@ class BeamDecoder(BasicDecoder):
             encoder_outputs_i = encoder_outputs[:, i, :].unsqueeze(1)  # [src_length, 1, encoder_hidden_dim * 2]
             root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=0, s_n=s_i_t, pre_node=None,
                                  y_hat_path=y_hat[:, i, :].unsqueeze(1))
-            #  y_hat_path = [trg_length, trg_vocab_size]
+            #  y_hat_path = [trg_length, 1, trg_vocab_size]
             batch_nodes = [root_node] * 10
 
             for t in range(1, trg.size(0)):
@@ -100,11 +101,10 @@ class BeamDecoder(BasicDecoder):
 
                 for j in range(len(batch_nodes)):
                     node = batch_nodes[j]
-                    print(vars(node))
                     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
                                                                         encoder_outputs_i, mask[i])
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
-                    y_hat_i_t_full[:, j*self.trg_vocab_size: (j + 1)*self.trg_vocab_size] = y_hat_i_t_j
+                    y_hat_i_t_full[:, j * self.trg_vocab_size: (j + 1) * self.trg_vocab_size] = y_hat_i_t_j
                     if isinstance(s_i_t_full, tuple):
                         s_i_t_full[0][:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j[0]
                         s_i_t_full[1][:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j[1]
@@ -113,6 +113,7 @@ class BeamDecoder(BasicDecoder):
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]
+                print(prev_node_inds)
                 new_batch_nodes = []
                 for k in range(self.beam_size):
                     y_hat_n = indices[0, k].unsqueeze(0)
@@ -130,7 +131,6 @@ class BeamDecoder(BasicDecoder):
                                                     s_n=s_n,
                                                     log_prob_n=prev_node.log_prob_n + y_hat_i_t_topk[0, k],
                                                     pre_node=prev_node, y_hat_path=y_hat_path))
-                    print(y_hat_n.shape)
                     assert y_hat_n.shape[0] == 1
                     assert s_n[0].shape[1] == self.hidden_dim
                 batch_nodes = new_batch_nodes
@@ -143,5 +143,4 @@ class BeamDecoder(BasicDecoder):
                     end_node = node
             y_hat[:, i, :] = end_node.y_hat_path
 
-        print(y_hat.shape)
         return y_hat
