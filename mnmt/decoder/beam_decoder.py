@@ -184,7 +184,6 @@ class BeamDecoder(BasicDecoder):
                 current_hidden = tuple([h.index_select(1, t_predecessors) for h in nw_hidden[t]])
             else:
                 current_hidden = nw_hidden[t].index_select(1, t_predecessors)
-            print(current_hidden.shape)
             current_symbol = symbols[t].index_select(0, t_predecessors)
             # Re-order the back pointer of the previous step with the back pointer of
             # the current step
