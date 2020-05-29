@@ -63,8 +63,8 @@ class BeamDecoder(BasicDecoder):
             mask: [batch_size, src_length], mask out <pad> for attention
             teacher_forcing_ratio: probability of applying teacher forcing or not
         """
-        # if self.is_training:
-        #     return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
+        if self.is_training:
+            return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
 
         batch_size = trg.shape[1]
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
@@ -73,6 +73,7 @@ class BeamDecoder(BasicDecoder):
 
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
+        print(batch_size)
         for i in range(batch_size):
             y_hat_i_t = y_hat_t[i].unsqueeze(0)  # torch.Size([1]), all <sos> indeed
 
@@ -113,7 +114,6 @@ class BeamDecoder(BasicDecoder):
                 #     else:
                 #         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
                 y_hat_i_t_full = y_hat_i_t.clone().repeat(self.beam_size)
-                print(y_hat_i_t_full.shape)
                 if isinstance(s_i_t, tuple):
                     s_i_t_full = (torch.zeros(self.beam_size, self.hidden_dim).to(self.device),
                                   torch.zeros(self.beam_size, self.hidden_dim).to(self.device))
