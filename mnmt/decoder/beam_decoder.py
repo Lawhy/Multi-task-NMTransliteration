@@ -225,13 +225,13 @@ class BeamDecoder(BasicDecoder):
                     t_predecessors[res_idx] = predecessors[t][idx[0]]
                     current_output[res_idx, :] = nw_output[t][idx[0], :]
                     if lstm:
-                        current_hidden[0][res_idx, :] = nw_hidden[t][0][idx[0], :]
-                        current_hidden[1][res_idx, :] = nw_hidden[t][1][idx[0], :]
-                        h_n[0][res_idx, :] = nw_hidden[t][0][idx[0], :].data
-                        h_n[1][res_idx, :] = nw_hidden[t][1][idx[0], :].data
+                        current_hidden[0][:, res_idx] = nw_hidden[t][0][:, idx[0]]
+                        current_hidden[1][:, res_idx] = nw_hidden[t][1][:, idx[0]]
+                        h_n[0][:, res_idx] = nw_hidden[t][0][:, idx[0]].data
+                        h_n[1][:, res_idx] = nw_hidden[t][1][:, idx[0]].data
                     else:
-                        current_hidden[res_idx, :] = nw_hidden[t][idx[0], :]
-                        h_n[res_idx, :] = nw_hidden[t][idx[0], :].data
+                        current_hidden[:, res_idx] = nw_hidden[t][:, idx[0]]
+                        h_n[:, res_idx] = nw_hidden[t][:, idx[0]].data
                     current_symbol[res_idx, :] = symbols[t][idx[0]]
                     s[b_idx, res_k_idx] = scores[t][idx[0]].data[0]
                     l[b_idx][res_k_idx] = t + 1
