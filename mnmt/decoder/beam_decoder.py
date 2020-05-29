@@ -77,8 +77,8 @@ class BeamDecoder(BasicDecoder):
             # Reshape input = (bk) and sequence_scores = (bk)
             y_hat_t = (candidates % self.trg_vocab_size).view(batch_size * self.beam_size)
             # Apply teacher forcing
-            if random.random() < teacher_forcing_ratio:
-                y_hat_t = inflate(trg[t], self.beam_size, dim=0)
+            # if random.random() < teacher_forcing_ratio:
+            #     y_hat_t = inflate(trg[t], self.beam_size, dim=0)
             sequence_scores = scores.view(batch_size * self.beam_size, 1)
 
             # Update fields for next time step
