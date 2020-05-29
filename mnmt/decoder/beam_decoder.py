@@ -29,6 +29,7 @@ class BeamDecoder(BasicDecoder):
             mask: [batch_size, src_length], mask out <pad> for attention
             teacher_forcing_ratio: probability of applying teacher forcing or not
         """
+        y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         batch_size = encoder_outputs.shape[1]
         s_t = self.init_s_0(encoder_final_state)  # [batch, hidden] or tuple
         if isinstance(s_t, tuple):
@@ -106,6 +107,7 @@ class BeamDecoder(BasicDecoder):
                                                     stored_scores, batch_size, self.hidden_dim, trg.size(0))
 
         # Build return objects
+        print(y_hat.shape[0], len(output))
         decoder_outputs = [step[:, 0, :] for step in output]
         # if isinstance(h_n, tuple):
         #     decoder_hidden = tuple([h[:, :, 0, :] for h in h_n])
