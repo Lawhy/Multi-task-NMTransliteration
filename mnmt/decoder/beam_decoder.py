@@ -70,7 +70,8 @@ class BeamDecoder(BasicDecoder):
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
         for i in range(batch_size):
-            y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [batch_size=1, hidden_dim], all <sos> indeed
+            y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [1, batch_size=1], all <sos> indeed
+            assert tuple(y_hat_i_t.shape) == (1, 1)
 
             if isinstance(s_t, tuple):
                 s_i_t = (s_t[0][i].unsqueeze(0), s_t[1][i].unsqueeze(0))  # [1, hidden_dim], tuple
@@ -111,13 +112,10 @@ class BeamDecoder(BasicDecoder):
                         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
-                print(y_hat_i_t_topk.shape)
-                print(indices)
-                prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]
-                print(prev_node_inds)
+                prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
                 new_batch_nodes = []
                 for k in range(self.beam_size):
-                    y_hat_n = indices[0, k].unsqueeze(0)
+                    y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  #
                     prev_node_ind = prev_node_inds[k]
                     prev_node = batch_nodes[prev_node_ind]
                     if isinstance(s_i_t_full, tuple):
