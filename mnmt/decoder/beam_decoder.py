@@ -70,7 +70,7 @@ class BeamDecoder(BasicDecoder):
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
         for i in range(batch_size):
-            y_hat_i_t = y_hat_t[i].unsqueeze(0)  # [1, batch_size=1], all <sos> indeed
+            y_hat_i_t = y_hat_t[i].unsqueeze(0)  # torch.Size([1]), all <sos> indeed
             print(y_hat_i_t.shape)
 
             if isinstance(s_t, tuple):
@@ -115,8 +115,7 @@ class BeamDecoder(BasicDecoder):
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
                 new_batch_nodes = []
                 for k in range(self.beam_size):
-                    y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  # fix the index
-                    print(y_hat_n.shape)
+                    y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  # fix the index, torch.Size([1])
                     prev_node_ind = prev_node_inds[k]
                     prev_node = batch_nodes[prev_node_ind]
                     if isinstance(s_i_t_full, tuple):
@@ -141,6 +140,7 @@ class BeamDecoder(BasicDecoder):
             for node in batch_nodes:
                 if node.log_prob_n > max_log_prob:
                     end_node = node
+            print(end_node.y_hat_path.shape)
             y_hat[:, i, :] = end_node.y_hat_path
 
         return y_hat
