@@ -166,7 +166,6 @@ class BeamDecoder(BasicDecoder):
         sorted_score, sorted_idx = scores[-1].view(b, self.beam_size).topk(self.beam_size)
         # initialize the sequence scores with the sorted last step beam scores
         s = sorted_score.clone()
-        print(s.shape)
 
         batch_eos_found = [0] * b  # the number of EOS found
         # in the backward loop below for each batch
@@ -178,7 +177,6 @@ class BeamDecoder(BasicDecoder):
 
         while t >= 0:
             # Re-order the variables with the back pointer
-            print(t)
             current_output = nw_output[t].index_select(0, t_predecessors)
             if lstm:
                 current_hidden = tuple([h.index_select(1, t_predecessors) for h in nw_hidden[t]])
@@ -254,7 +252,7 @@ class BeamDecoder(BasicDecoder):
         # Reverse the sequences and re-order at the same time
         # It is reversed because the backtracking happens in reverse time order
         output = [step.index_select(0, re_sorted_idx).view(b, self.beam_size, -1) for step in reversed(output)]
-        p = [step.index_select(0, re_sorted_idx).view(b, self.beam_sizek, -1) for step in reversed(p)]
+        p = [step.index_select(0, re_sorted_idx).view(b, self.beam_size, -1) for step in reversed(p)]
         if lstm:
             h_t = [tuple([h.index_select(1, re_sorted_idx).view(-1, b, self.beam_size, hidden_size) for h in step])
                    for step in reversed(h_t)]
