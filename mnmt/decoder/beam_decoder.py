@@ -102,7 +102,7 @@ class BeamDecoder(BasicDecoder):
                     node = batch_nodes[j]
                     print(vars(node))
                     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
-                                                                        encoder_outputs_i, mask, ith_sample=i)
+                                                                        encoder_outputs_i, mask[i])
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
                     y_hat_i_t_full[:, j*self.trg_vocab_size: (j + 1)*self.trg_vocab_size] = y_hat_i_t_j
                     if isinstance(s_i_t_full, tuple):
