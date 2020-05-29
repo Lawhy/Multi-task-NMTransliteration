@@ -94,7 +94,7 @@ class BeamDecoder(BasicDecoder):
             stored_scores.append(sequence_scores.clone())
             eos_indices = y_hat_t.data.eq(self.EOS)
             if eos_indices.nonzero().dim() > 0:
-                sequence_scores.masked_fill_(eos_indices, -float('inf'))
+                sequence_scores.data.masked_fill_(eos_indices, -float('inf'))
 
             # Cache results for backtracking
             stored_predecessors.append(predecessors)
