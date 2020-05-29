@@ -13,7 +13,7 @@ class BeamNode:
         self.y_hat_path = y_hat_path
 
 
-class BeamDecoder(BasicDecoder):
+class BeamDecoderBatch(BasicDecoder):
 
     def __init__(self, feed_forward_decoder, bridge_layer, device, beam_size, is_training=True):
         """
@@ -63,13 +63,22 @@ class BeamDecoder(BasicDecoder):
             mask: [batch_size, src_length], mask out <pad> for attention
             teacher_forcing_ratio: probability of applying teacher forcing or not
         """
-        if self.is_training:
-            return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
+        # if self.is_training:
+        #     return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
 
         batch_size = trg.shape[1]
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
+
+        # inflate the matrices
+        y_hat_t = inflate(y_hat_t, self.beam_size, dim=0)
+        assert y_hat_t.shape[0] == self.beam_size * batch_size
+        if isinstance(s_t, tuple):
+            s_t = (inflate(s_t[0], self.beam_size, dim=0),
+                   inflate(s_t[1], self.beam_size, dim=0))  # [batch * beam, hidden]
+        else:
+            s_t = inflate(s_t, self.beam_size, dim=0)
 
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
@@ -94,52 +103,24 @@ class BeamDecoder(BasicDecoder):
                 # we use the same subscript t for y and s here because y starts from 1, s starts from 0
 
                 # explore beam-size * vocab-size possibilities
-                # y_hat_i_t_full = torch.zeros(1, self.trg_vocab_size * self.beam_size).to(self.device)
-                # if isinstance(s_i_t, tuple):
-                #     s_i_t_full = (torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device),
-                #                   torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device))
-                # else:
-                #     s_i_t_full = torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device)
-                #
-                # for j in range(len(batch_nodes)):
-                #     node = batch_nodes[j]
-                #     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
-                #                                                         encoder_outputs_i, mask[i])
-                #     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
-                #     y_hat_i_t_full[:, j * self.trg_vocab_size: (j + 1) * self.trg_vocab_size] = y_hat_i_t_j
-                #     if isinstance(s_i_t_full, tuple):
-                #         s_i_t_full[0][:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j[0]
-                #         s_i_t_full[1][:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j[1]
-                #     else:
-                #         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
-                y_hat_i_t_full = torch.zeros(self.beam_size, self.trg_vocab_size).to(self.device)
+                y_hat_i_t_full = torch.zeros(1, self.trg_vocab_size * self.beam_size).to(self.device)
                 if isinstance(s_i_t, tuple):
-                    s_i_t_full = (torch.zeros(self.beam_size, self.hidden_dim).to(self.device),
-                                  torch.zeros(self.beam_size, self.hidden_dim).to(self.device))
+                    s_i_t_full = (torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device),
+                                  torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device))
                 else:
-                    s_i_t_full = torch.zeros(self.beam_size, self.hidden_dim).to(self.device)
+                    s_i_t_full = torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device)
 
                 for j in range(len(batch_nodes)):
                     node = batch_nodes[j]
+                    y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
+                                                                        encoder_outputs_i, mask[i])
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
-                    y_hat_i_t_full[j, :] = node.y_hat_n
+                    y_hat_i_t_full[:, j * self.trg_vocab_size: (j + 1) * self.trg_vocab_size] = y_hat_i_t_j
                     if isinstance(s_i_t_full, tuple):
-                        s_i_t_full[0][j, :] = node.s_n[0]
-                        s_i_t_full[1][j, :] = node.s_n[1]
+                        s_i_t_full[0][:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j[0]
+                        s_i_t_full[1][:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j[1]
                     else:
-                        s_i_t_full[j, :] = node.s_n
-                y_hat_i_t_full, s_i_t_full, _ = \
-                    self.feed_forward_decoder(y_hat_i_t_full, s_i_t_full,
-                                              inflate(encoder_outputs_i, self.beam_size, dim=1),
-                                              inflate(mask[i].unsqueeze(0), self.beam_size, dim=0))
-
-                # fix the shape for ranking topk
-                y_hat_i_t_full = y_hat_i_t_full.view(1, self.beam_size * self.trg_vocab_size)
-                if isinstance(s_i_t, tuple):
-                    s_i_t_full = (s_i_t_full[0].view(1, self.beam_size * self.hidden_dim),
-                                  s_i_t_full[1].view(1, self.beam_size * self.hidden_dim))
-                else:
-                    s_i_t_full = s_i_t_full.view(1, self.beam_size * self.hidden_dim)
+                        s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
