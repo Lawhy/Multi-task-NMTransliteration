@@ -153,7 +153,7 @@ class BeamDecoder(BasicDecoder):
         # the last hidden state of decoding.
         if lstm:
             state_size = nw_hidden[0][0].size()
-            h_n = tuple([torch.zeros(state_size).to(self.device), torch.zeros(state_size)].to(self.device))
+            h_n = (torch.zeros(state_size).to(self.device), torch.zeros(state_size).to(self.device))
         else:
             h_n = torch.zeros(nw_hidden[0].size()).to(self.device)
         l = [[max_length] * self.beam_size for _ in range(b)]  # Placeholder for lengths of top-k sequences
