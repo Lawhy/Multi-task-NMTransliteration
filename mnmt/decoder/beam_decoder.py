@@ -65,7 +65,7 @@ class BeamDecoder(BasicDecoder):
         # if self.is_training:
         #     return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
 
-        batch_size = encoder_outputs.shape[1]
+        batch_size = trg.shape[1]
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
@@ -141,5 +141,5 @@ class BeamDecoder(BasicDecoder):
                         end_node = node
                 y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
 
-        print(y_hat)
+        print(y_hat.shape)
         return y_hat
