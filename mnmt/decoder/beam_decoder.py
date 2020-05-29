@@ -139,6 +139,6 @@ class BeamDecoder(BasicDecoder):
                     if node.log_prob_n > max_log_prob:
                         end_node = node
                 print(y_hat.shape, end_node.y_hat_path.shape)
-                y_hat[:, i, :] = end_node.y_hat_path
+                y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
 
         return y_hat
