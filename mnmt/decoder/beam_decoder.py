@@ -138,9 +138,13 @@ class BeamDecoder(BasicDecoder):
         """
 
         lstm = isinstance(nw_hidden[0], tuple)
-        nw_hidden = [(s[0].permute(1, 0),
-                      s[1].permute(1, 0))
-                     for s in nw_hidden]  # swap dimension to match the author's code
+
+        if isinstance(nw_hidden[0], tuple):
+            nw_hidden = [(s[0].permute(1, 0),
+                          s[1].permute(1, 0))
+                         for s in nw_hidden]  # swap dimension to match the author's code
+        else:
+            nw_hidden = [s.permute(1, 0) for s in nw_hidden]
 
         # initialize return variables given different types
         output = list()
