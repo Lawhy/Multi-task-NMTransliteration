@@ -141,5 +141,4 @@ class BeamDecoder(BasicDecoder):
                         end_node = node
                 y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
 
-        print(y_hat.shape)
         return y_hat

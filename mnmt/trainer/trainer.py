@@ -277,7 +277,6 @@ class Trainer:
             else:
                 output = self.model(src, src_lens, trg)
                 loss = self.compute_loss(output, trg)
-            print(loss)
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1)  # clip = 1
@@ -285,12 +284,12 @@ class Trainer:
 
             epoch_loss += loss.item()
             running_loss = epoch_loss / (i + 1)
-            print(loss)
 
             self.train_memory_bank.n_steps += 1
 
             # print every ${report_interval} batches (${report_interval} steps)
             if self.train_memory_bank.n_steps % self.train_memory_bank.report_interval == 0:
+                print("EEEEEENTER!")
 
                 lr = -1
                 for param_group in self.optimizer.param_groups:
