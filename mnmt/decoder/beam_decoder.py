@@ -138,7 +138,9 @@ class BeamDecoder(BasicDecoder):
         """
 
         lstm = isinstance(nw_hidden[0], tuple)
-        nw_hidden = [s.permute(1, 0) for s in nw_hidden]  # swap dimension to match the author's code
+        nw_hidden = [(s[0].permute(1, 0),
+                      s[1].permute(1, 0))
+                     for s in nw_hidden]  # swap dimension to match the author's code
 
         # initialize return variables given different types
         output = list()
@@ -173,7 +175,7 @@ class BeamDecoder(BasicDecoder):
         while t >= 0:
             # Re-order the variables with the back pointer
             print(t)
-            current_output = nw_output[t].index_select(1, t_predecessors)
+            current_output = nw_output[t].index_select(0, t_predecessors)
             if lstm:
                 current_hidden = tuple([h.index_select(1, t_predecessors) for h in nw_hidden[t]])
             else:
