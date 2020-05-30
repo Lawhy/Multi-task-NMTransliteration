@@ -156,6 +156,7 @@ class BeamDecoder(BasicDecoder):
                     max_ind = n
                 n += 1
             y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
-            print("Maximum index is {}".format(max_ind))
+            if not max_ind == 0:
+                print("Maximum index is {}".format(max_ind))
 
         return y_hat
