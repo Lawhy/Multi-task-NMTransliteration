@@ -5,12 +5,13 @@ import torch
 
 
 class BeamNode:
-    def __init__(self, y_hat_n, log_prob_n, s_n, pre_node, y_hat_path):
+    def __init__(self, y_hat_n, log_prob_n, s_n, pre_node, y_hat_path, length):
         self.y_hat_n = y_hat_n
         self.log_prob_n = log_prob_n
         self.s_n = s_n
         self.pre_node = pre_node
         self.y_hat_path = y_hat_path
+        self.length = length
 
 
 class BeamDecoderBatch(BasicDecoder):
@@ -26,6 +27,7 @@ class BeamDecoderBatch(BasicDecoder):
         self.beam_size = beam_size
         self.hidden_dim = self.feed_forward_decoder.attrs.hidden_dim
         self.turn_on_beam = turn_on_beam
+        self.eos_idx = self.feed_forward_decoder.trg_eos_idx
 
     def training_forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
         """
@@ -91,8 +93,8 @@ class BeamDecoderBatch(BasicDecoder):
                 s_i_t = s_t[i].unsqueeze(0)  # [1, hidden_dim]
 
             encoder_outputs_i = encoder_outputs[:, i, :].unsqueeze(1)  # [src_length, 1, encoder_hidden_dim * 2]
-            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=0, s_n=s_i_t, pre_node=None,
-                                 y_hat_path=y_hat[:, i, :].unsqueeze(1))
+            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=[0], s_n=s_i_t, pre_node=None,
+                                 y_hat_path=y_hat[:, i, :].unsqueeze(1), length=0)
             #  y_hat_path = [trg_length, 1, trg_vocab_size]
             batch_nodes = [root_node] * self.beam_size
 
@@ -137,10 +139,22 @@ class BeamDecoderBatch(BasicDecoder):
                     y_hat_path = prev_node.y_hat_path
                     y_hat_path[t, :] = \
                         y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
-                    new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
-                                                    s_n=s_n,
-                                                    log_prob_n=prev_node.log_prob_n + y_hat_i_t_topk[0, k],
-                                                    pre_node=prev_node, y_hat_path=y_hat_path))
+
+                    if y_hat_n == self.eos_idx:
+                        print("END")
+                        new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
+                                                        s_n=s_n,
+                                                        log_prob_n=prev_node.log_prob_n,
+                                                        pre_node=prev_node,
+                                                        y_hat_path=y_hat_path,
+                                                        length=prev_node.length))
+                    else:
+                        new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
+                                                        s_n=s_n,
+                                                        log_prob_n=prev_node.log_prob_n + [y_hat_i_t_topk[0, k]],
+                                                        pre_node=prev_node,
+                                                        y_hat_path=y_hat_path,
+                                                        length=t))
                 batch_nodes = new_batch_nodes
 
             # backtrace
@@ -149,10 +163,11 @@ class BeamDecoderBatch(BasicDecoder):
             max_ind = 0
             n = 0
             for node in batch_nodes:
-                print(node.log_prob_n, max_log_prob)
-                if node.log_prob_n > max_log_prob:
+                normalised_log_prob_n = sum(node.log_prob_n) / (node.length ** 0.7)
+                print(normalised_log_prob_n, max_log_prob)
+                if normalised_log_prob_n > max_log_prob:
                     end_node = node
-                    max_log_prob = node.log_prob_n
+                    max_log_prob = normalised_log_prob_n
                     max_ind = n
                 n += 1
             y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
