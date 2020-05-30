@@ -126,6 +126,7 @@ class BeamDecoderBatch(BasicDecoder):
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
+                print(t, y_hat_i_t_topk, indices, prev_node_inds)
                 new_batch_nodes = []
                 for k in range(self.beam_size):
                     y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  # fix the index, torch.Size([1])
