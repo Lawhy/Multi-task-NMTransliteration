@@ -135,7 +135,7 @@ class BeamDecoderBatch(BasicDecoder):
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
                 new_batch_nodes = []
 
-                print(t, y_hat_i_t_topk, indices, prev_node_inds)
+                print(t, y_hat_i_t_topk)
                 for k in range(self.beam_size):
                     y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  # fix the index, torch.Size([1])
                     prev_node_ind = prev_node_inds[k]
@@ -171,6 +171,7 @@ class BeamDecoderBatch(BasicDecoder):
             max_ind = 0
             n = 0
             for node in batch_nodes:
+                print(node.length)
                 normalised_log_prob_n = sum(node.log_prob_n) / (node.length ** 0.7)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
