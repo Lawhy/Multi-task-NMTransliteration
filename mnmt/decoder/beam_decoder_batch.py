@@ -149,6 +149,7 @@ class BeamDecoderBatch(BasicDecoder):
             max_ind = 0
             n = 0
             for node in batch_nodes:
+                print(node.log_prob_n, max_log_prob)
                 if node.log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = node.log_prob_n
