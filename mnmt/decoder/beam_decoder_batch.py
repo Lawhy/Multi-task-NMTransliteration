@@ -141,7 +141,7 @@ class BeamDecoderBatch(BasicDecoder):
                         y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
 
                     if y_hat_n == self.eos_idx:
-                        print("END")
+                        print("END", t)
                         new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
                                                         s_n=s_n,
                                                         log_prob_n=prev_node.log_prob_n,
@@ -164,7 +164,6 @@ class BeamDecoderBatch(BasicDecoder):
             n = 0
             for node in batch_nodes:
                 normalised_log_prob_n = sum(node.log_prob_n) / (node.length ** 0.7)
-                print(normalised_log_prob_n, max_log_prob)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
