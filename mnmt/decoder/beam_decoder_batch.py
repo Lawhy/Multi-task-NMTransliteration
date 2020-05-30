@@ -94,7 +94,7 @@ class BeamDecoderBatch(BasicDecoder):
 
             encoder_outputs_i = encoder_outputs[:, i, :].unsqueeze(1)  # [src_length, 1, encoder_hidden_dim * 2]
             root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=0, s_n=s_i_t, pre_node=None,
-                                 y_hat_path=y_hat[:, i, :].unsqueeze(1))
+                                 y_hat_path=y_hat[:, i, :].unsqueeze(1), length=0)
             #  y_hat_path = [trg_length, 1, trg_vocab_size]
             batch_nodes = [root_node] * self.beam_size
 
