@@ -63,8 +63,8 @@ class BeamDecoder(BasicDecoder):
             mask: [batch_size, src_length], mask out <pad> for attention
             teacher_forcing_ratio: probability of applying teacher forcing or not
         """
-        if not self.turn_on_beam:
-            return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
+        # if not self.turn_on_beam:
+        #     return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
 
         batch_size = trg.shape[1]
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
@@ -148,6 +148,7 @@ class BeamDecoder(BasicDecoder):
                 max_log_prob = -float('inf')
                 end_node = None
                 for node in batch_nodes:
+                    print(node.log_prob_n, max_log_prob)
                     if node.log_prob_n > max_log_prob:
                         end_node = node
                 y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)

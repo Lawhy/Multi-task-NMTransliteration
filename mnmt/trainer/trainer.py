@@ -336,11 +336,9 @@ class Trainer:
         correct = 0
         correct_aux = 0
         iterator = self.valid_iter if not is_test else self.test_iter
-        log_print(self.train_log_path,
-                  "Beam size: {}".format(self.args_feeder.beam_size))
 
         if self.args_feeder.beam_size > 1 and self.turn_on_beam:
-            print("Start beam searching ...")
+            print("Start beam (size={}) searching ...".format(self.args_feeder.beam_size))
             if self.args_feeder.beam_size > 1:
                 if self.task == "Multi":
                     for de in self.model.decoder_list:
