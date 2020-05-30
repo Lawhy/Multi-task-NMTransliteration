@@ -93,7 +93,7 @@ class BeamDecoderBatch(BasicDecoder):
                 s_i_t = s_t[i].unsqueeze(0)  # [1, hidden_dim]
 
             encoder_outputs_i = encoder_outputs[:, i, :].unsqueeze(1)  # [src_length, 1, encoder_hidden_dim * 2]
-            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=0, s_n=s_i_t, pre_node=None,
+            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=[0], s_n=s_i_t, pre_node=None,
                                  y_hat_path=y_hat[:, i, :].unsqueeze(1), length=0)
             #  y_hat_path = [trg_length, 1, trg_vocab_size]
             batch_nodes = [root_node] * self.beam_size
@@ -128,7 +128,7 @@ class BeamDecoderBatch(BasicDecoder):
                 if t == 1:
                     y_hat_i_t_full.fill_(-float("Inf"))  # mask out all but the first beam (expanded from <sos>)
                     first_beam_inds = range(self.trg_vocab_size)
-                    y_hat_i_t_full.index_fill(dim=1, index=torch.tensor(first_beam_inds).to(self.device), value=0.0)
+                    y_hat_i_t_full.index_fill_(dim=1, index=torch.tensor(first_beam_inds).to(self.device), value=0.0)
                     print(y_hat_i_t_full)
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
