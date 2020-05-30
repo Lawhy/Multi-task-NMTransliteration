@@ -15,7 +15,7 @@ class BeamNode:
 
 class BeamDecoderBatch(BasicDecoder):
 
-    def __init__(self, feed_forward_decoder, bridge_layer, device, beam_size, is_training=True):
+    def __init__(self, feed_forward_decoder, bridge_layer, device, beam_size, turn_on_beam=False):
         """
         Args:
             feed_forward_decoder:
@@ -25,7 +25,7 @@ class BeamDecoderBatch(BasicDecoder):
         super().__init__(feed_forward_decoder, bridge_layer, device)
         self.beam_size = beam_size
         self.hidden_dim = self.feed_forward_decoder.attrs.hidden_dim
-        self.is_training = is_training
+        self.turn_on_beam = turn_on_beam
 
     def training_forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
         """
