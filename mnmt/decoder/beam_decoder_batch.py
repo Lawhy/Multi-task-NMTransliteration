@@ -95,7 +95,9 @@ class BeamDecoderBatch(BasicDecoder):
             encoder_outputs_i = encoder_outputs[:, i, :].unsqueeze(1)  # [src_length, 1, encoder_hidden_dim * 2]
             root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=[0], s_n=s_i_t, pre_node=None,
                                  y_hat_path=y_hat[:, i, :].unsqueeze(1), length=0)
-            root_node_rest = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=[-float("Inf")], s_n=s_i_t, pre_node=None,
+            # prevent repeating
+            root_node_rest = BeamNode(y_hat_n=y_hat_i_t.clone().fill(-float("-inf")),
+                                      log_prob_n=[-float("Inf")], s_n=s_i_t, pre_node=None,
                                       y_hat_path=y_hat[:, i, :].unsqueeze(1), length=0)
             #  y_hat_path = [trg_length, 1, trg_vocab_size]
             batch_nodes = [root_node] + [root_node_rest] * (self.beam_size - 1)
@@ -126,10 +128,11 @@ class BeamDecoderBatch(BasicDecoder):
                     else:
                         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
 
-                print(y_hat_i_t_full[:, :20])
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
                 new_batch_nodes = []
+
+                print(t, y_hat_i_t_topk, indices, prev_node_inds)
                 for k in range(self.beam_size):
                     y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  # fix the index, torch.Size([1])
                     prev_node_ind = prev_node_inds[k]
