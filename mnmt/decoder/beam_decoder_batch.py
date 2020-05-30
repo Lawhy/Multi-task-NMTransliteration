@@ -63,7 +63,7 @@ class BeamDecoderBatch(BasicDecoder):
             mask: [batch_size, src_length], mask out <pad> for attention
             teacher_forcing_ratio: probability of applying teacher forcing or not
         """
-        if self.is_training:
+        if not self.turn_on_beam:
             return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
 
         batch_size = trg.shape[1]
