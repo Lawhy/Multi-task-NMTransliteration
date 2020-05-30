@@ -148,20 +148,20 @@ class BeamDecoder(BasicDecoder):
                     y_hat_path[t, :] = \
                         y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
 
-                    if y_hat_n == self.eos_idx:
-                        new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
-                                                        s_n=s_n,
-                                                        log_prob_n=prev_node.log_prob_n,
-                                                        pre_node=prev_node,
-                                                        y_hat_path=y_hat_path,
-                                                        length=prev_node.length))
-                    else:
-                        new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
-                                                        s_n=s_n,
-                                                        log_prob_n=prev_node.log_prob_n + [y_hat_i_t_topk[0, k]],
-                                                        pre_node=prev_node,
-                                                        y_hat_path=y_hat_path,
-                                                        length=t))
+                    #if y_hat_n == self.eos_idx:
+                        # new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
+                        #                                 s_n=s_n,
+                        #                                 log_prob_n=prev_node.log_prob_n,
+                        #                                 pre_node=prev_node,
+                        #                                 y_hat_path=y_hat_path,
+                        #                                 length=prev_node.length))
+                    #else:
+                    new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
+                                                    s_n=s_n,
+                                                    log_prob_n=prev_node.log_prob_n + [y_hat_i_t_topk[0, k]],
+                                                    pre_node=prev_node,
+                                                    y_hat_path=y_hat_path,
+                                                    length=t))
                 batch_nodes = new_batch_nodes
 
             # backtrace
@@ -170,7 +170,7 @@ class BeamDecoder(BasicDecoder):
             # max_ind = 0
             n = 0
             for node in batch_nodes:
-                normalised_log_prob_n = sum(node.log_prob_n) / (node.length ** 0.7)
+                normalised_log_prob_n = sum(node.log_prob_n) # / (node.length ** 0.7)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
