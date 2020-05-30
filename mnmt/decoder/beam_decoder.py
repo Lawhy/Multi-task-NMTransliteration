@@ -144,14 +144,14 @@ class BeamDecoder(BasicDecoder):
                                                     pre_node=prev_node, y_hat_path=y_hat_path))
                 batch_nodes = new_batch_nodes
 
-                # backtrace
-                max_log_prob = -float('inf')
-                end_node = None
-                for node in batch_nodes:
-                    print(node.log_prob_n, max_log_prob)
-                    if node.log_prob_n > max_log_prob:
-                        end_node = node
-                        max_log_prob = node.log_prob_n
-                y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
+            # backtrace
+            max_log_prob = -float('inf')
+            end_node = None
+            for node in batch_nodes:
+                print(node.log_prob_n, max_log_prob)
+                if node.log_prob_n > max_log_prob:
+                    end_node = node
+                    max_log_prob = node.log_prob_n
+            y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
 
         return y_hat
