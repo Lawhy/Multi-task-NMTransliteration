@@ -126,10 +126,9 @@ class BeamDecoderBatch(BasicDecoder):
 
                 # avoid repeating for time-step 1
                 if t == 1:
-                    first_beam = y_hat_i_t_full[:, 0: self.trg_vocab_size]
-                    print(first_beam)
                     y_hat_i_t_full.fill_(-float("Inf"))  # mask out all but the first beam (expanded from <sos>)
-                    y_hat_i_t_full[:, 0: self.trg_vocab_size] = first_beam
+                    first_beam_inds = range(self.trg_vocab_size)
+                    y_hat_i_t_full.index_fill(dim=1, index=torch.tensor(first_beam_inds), value=0.0)
                     print(y_hat_i_t_full)
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
