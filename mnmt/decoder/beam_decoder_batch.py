@@ -129,13 +129,11 @@ class BeamDecoderBatch(BasicDecoder):
                     y_hat_i_t_full.fill_(-float("Inf"))  # mask out all but the first beam (expanded from <sos>)
                     first_beam_inds = range(self.trg_vocab_size)
                     y_hat_i_t_full.index_fill_(dim=1, index=torch.tensor(first_beam_inds).to(self.device), value=0.0)
-                    print(y_hat_i_t_full)
 
                 y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
                 new_batch_nodes = []
 
-                print(t, y_hat_i_t_topk)
                 for k in range(self.beam_size):
                     y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  # fix the index, torch.Size([1])
                     prev_node_ind = prev_node_inds[k]
@@ -168,18 +166,17 @@ class BeamDecoderBatch(BasicDecoder):
             # backtrace
             max_log_prob = -float('inf')
             end_node = None
-            max_ind = 0
+            # max_ind = 0
             n = 0
             for node in batch_nodes:
-                print(node.length)
                 normalised_log_prob_n = sum(node.log_prob_n) / (node.length ** 0.7)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
-                    max_ind = n
+                    # max_ind = n
                 n += 1
             y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
-            if not max_ind == 0:
-                print("Maximum index is {}".format(max_ind))
+            # if not max_ind == 0:
+            #     print("Maximum index is {}".format(max_ind))
 
         return y_hat
