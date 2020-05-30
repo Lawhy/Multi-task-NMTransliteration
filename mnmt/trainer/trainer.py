@@ -113,6 +113,9 @@ class Trainer:
         # translator
         self.translator = Seq2SeqTranslator(self.args_feeder.quiet_translate)
 
+        # beam search
+        self.turn_on_beam = False
+
     def run(self, burn_in_epoch):
         try:
             for epoch in range(self.train_memory_bank.total_epochs):
@@ -133,18 +136,10 @@ class Trainer:
 
                 self.tfr = max(1 - (float(10 + epoch * 1.5) / 50), 0.2)
                 train_loss = self.train()
-                # if epoch + 1 % 10 == 0:
-                #     valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False)
 
                 end_time = time.time()
 
                 epoch_mins, epoch_secs = self.epoch_time(start_time, end_time)
-
-                # self.update(valid_loss, valid_acc)
-                # if self.task == "Multi":
-                #   self.update_aux(valid_acc_aux)
-
-                # self.scheduler.step(valid_acc)  # update learning rate
 
                 log_print(self.train_log_path,
                           f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
@@ -262,9 +257,9 @@ class Trainer:
         if self.args_feeder.beam_size > 1:
             if self.task == "Multi":
                 for de in self.model.decoder_list:
-                    de.is_training = True
+                    de.turn_on_beam = False
             else:
-                self.model.decoder.is_training = True  # apply beam search
+                self.model.decoder.turn_on_beam = False  # turn off beam search during training
 
         epoch_loss = 0
 
@@ -324,9 +319,9 @@ class Trainer:
                     if self.args_feeder.beam_size > 1:
                         if self.task == "Multi":
                             for de in self.model.decoder_list:
-                                de.is_training = True
+                                de.turn_on_beam = False
                         else:
-                            self.model.decoder.is_training = True  # apply beam search
+                            self.model.decoder.turn_on_beam = False  # turn off beam search during training
 
                     self.model.train()
 
@@ -343,12 +338,15 @@ class Trainer:
         iterator = self.valid_iter if not is_test else self.test_iter
         log_print(self.train_log_path,
                   "Beam size: {}".format(self.args_feeder.beam_size))
-        if self.args_feeder.beam_size > 1:
-            if self.task == "Multi":
-                for de in self.model.decoder_list:
-                    de.is_training = False
-            else:
-                self.model.decoder.is_training = False  # apply beam search
+
+        if self.args_feeder.beam_size > 1 and self.turn_on_beam:
+            print("Start beam searching ...")
+            if self.args_feeder.beam_size > 1:
+                if self.task == "Multi":
+                    for de in self.model.decoder_list:
+                        de.turn_on_beam = True
+                else:
+                    self.model.decoder.turn_on_beam = True  # turn on beam search during evaluation
 
         with torch.no_grad():
 
@@ -396,6 +394,7 @@ class Trainer:
     def best_model_output(self, enable_acc_act=True, test_ref_dict=None):
 
         self.load_best_model()
+        self.turn_on_beam = True
 
         # evaluate val set
         f = open(self.args_feeder.valid_out_path, 'w')
