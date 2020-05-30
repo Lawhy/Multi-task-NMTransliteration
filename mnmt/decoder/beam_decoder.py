@@ -74,13 +74,13 @@ class BeamDecoder(BasicDecoder):
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
 
         # inflate the matrices
-        y_hat_t = inflate(y_hat_t, self.beam_size, dim=0)
-        assert y_hat_t.shape[0] == self.beam_size * batch_size
-        if isinstance(s_t, tuple):
-            s_t = (inflate(s_t[0], self.beam_size, dim=0),
-                   inflate(s_t[1], self.beam_size, dim=0))  # [batch * beam, hidden]
-        else:
-            s_t = inflate(s_t, self.beam_size, dim=0)
+        # y_hat_t = inflate(y_hat_t, self.beam_size, dim=0)
+        # assert y_hat_t.shape[0] == self.beam_size * batch_size
+        # if isinstance(s_t, tuple):
+        #     s_t = (inflate(s_t[0], self.beam_size, dim=0),
+        #            inflate(s_t[1], self.beam_size, dim=0))  # [batch * beam, hidden]
+        # else:
+        #     s_t = inflate(s_t, self.beam_size, dim=0)
 
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
