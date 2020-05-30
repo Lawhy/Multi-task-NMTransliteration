@@ -169,17 +169,17 @@ class BeamDecoder(BasicDecoder):
             # backtrace
             max_log_prob = -float('inf')
             end_node = None
-            max_ind = 0
+            # max_ind = 0
             n = 0
             for node in batch_nodes:
                 normalised_log_prob_n = sum(node.log_prob_n) / (node.length ** 0.7)
-                print(normalised_log_prob_n)
+                # print(normalised_log_prob_n)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
-                    max_ind = n
+                    # max_ind = n
                 n += 1
             y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
-            print("Maximum index is {}".format(max_ind))
+            # print("Maximum index is {}".format(max_ind))
 
         return y_hat
