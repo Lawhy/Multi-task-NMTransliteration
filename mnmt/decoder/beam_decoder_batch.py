@@ -96,7 +96,7 @@ class BeamDecoderBatch(BasicDecoder):
             root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=[0], s_n=s_i_t, pre_node=None,
                                  y_hat_path=y_hat[:, i, :].unsqueeze(1), length=0)
             # prevent repeating
-            root_node_rest = BeamNode(y_hat_n=y_hat_i_t.clone().fill(-float("-inf")),
+            root_node_rest = BeamNode(y_hat_n=y_hat_i_t.clone().fill_(-float("-inf")),
                                       log_prob_n=[-float("Inf")], s_n=s_i_t, pre_node=None,
                                       y_hat_path=y_hat[:, i, :].unsqueeze(1), length=0)
             #  y_hat_path = [trg_length, 1, trg_vocab_size]
