@@ -180,9 +180,7 @@ class BeamDecoder(BasicDecoder):
                                                         y_hat_path=y_hat_path,
                                                         seen_eos=False))
                 batch_nodes = new_batch_nodes
-                break
-
-            assert True == False
+            break
 
             # backtrace
             max_log_prob = -float('inf')
@@ -200,5 +198,7 @@ class BeamDecoder(BasicDecoder):
 
             y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
             print("Maximum index is {}".format(max_ind))
+
+        assert True == False
 
         return y_hat
