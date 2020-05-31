@@ -130,7 +130,11 @@ class BeamDecoder(BasicDecoder):
                 # => reshape(1, v) = [[1..., 2..., 3...]] of size (1, 3 * v),
                 # here beam = 3, trg-vocab-size = v
 
-                scores_t = scores_topk.t().expand(-1, self.trg_vocab_size).reshape(1, self.beam_size * self.trg_vocab_size)
+                scores_t = scores_topk.t().expand(-1, self.trg_vocab_size)\
+                    .reshape(1, self.beam_size * self.trg_vocab_size)
+
+                print(scores_t)
+
                 scores_topk, indices = torch.topk(y_hat_i_t_full + scores_t,
                                                   dim=1, k=self.beam_size)  # [1, beam_size]
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
