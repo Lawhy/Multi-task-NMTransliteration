@@ -453,5 +453,5 @@ class Trainer:
             results_test = act.compute_ACC_ACT(test_out)
             eval_results["ACC-ACT"] = [results_valid["acc-act"], results_test["acc-act"]]
             eval_results["Replaced"] = [results_valid["replaced"], results_test["replaced"]]
-        print(eval_results)
+        log_print(eval_results)
         eval_results.to_csv("experiments/exp" + str(self.args_feeder.exp_num) + "/eval.results", sep="\t")

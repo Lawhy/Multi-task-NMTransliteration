@@ -170,18 +170,13 @@ class BeamDecoder(BasicDecoder):
             # backtrace
             max_log_prob = -float('inf')
             end_node = None
-            max_ind = 0
             n = 0
             for node in output_nodes:
                 normalised_log_prob_n = sum(node.log_prob_path) / (len(node.log_prob_path) ** 0.7)
-                # print("-----------")
-                # print(node.log_prob_path)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
-                    max_ind = n
                 n += 1
-            # print("Maximum index is {}".format(max_ind))
 
             T = trg.size(0)
             path = []
@@ -194,5 +189,4 @@ class BeamDecoder(BasicDecoder):
             for t in range(len(path), T):
                 decoded_batch[i, t] = self.eos_idx
 
-        print(decoded_batch)
         return decoded_batch
