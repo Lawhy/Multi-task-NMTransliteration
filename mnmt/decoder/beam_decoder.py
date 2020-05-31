@@ -164,7 +164,8 @@ class BeamDecoder(BasicDecoder):
                                                        log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
                                                        pre_node=prev_node))
                 beam_nodes = new_beam_nodes
-                scores_topk = scores_topk.index_select(dim=1, index=torch.tensor(kept_beam_inds).to(self.device))
+                scores_topk = scores_topk.index_select(dim=1, index=torch.tensor(kept_beam_inds, dtype=torch.long)
+                                                       .to(self.device))
                 K = len(beam_nodes)
 
             # backtrace
