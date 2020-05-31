@@ -62,7 +62,6 @@ class BeamDecoder(BasicDecoder):
     def beam_decode(self, trg, encoder_outputs, encoder_final_state, mask):
 
         batch_size = trg.shape[1]
-        y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
         decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
@@ -184,13 +183,16 @@ class BeamDecoder(BasicDecoder):
                 n += 1
             # print("Maximum index is {}".format(max_ind))
 
-            t = trg.size(0) - 1
-            count = 0
+            T = trg.size(0)
+            path = []
             while end_node is not None:
-                decoded_batch[i, t] = end_node.y_hat_n[0]
+                path.append(end_node)
                 end_node = end_node.pre_node
-                count += 1
-                t += -1
+            path.reverse()
+            for t in range(len(path)):
+                decoded_batch[i, t] = path[t].y_hat_n[0]
+            for t in range(len(path), T):
+                decoded_batch[i, t] = self.eos_idx
 
         print(decoded_batch)
         return decoded_batch
