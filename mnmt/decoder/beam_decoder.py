@@ -199,9 +199,9 @@ class BeamDecoder(BasicDecoder):
             y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
             print("Maximum index is {}".format(max_ind))
 
-            if i == 10:
-                break
+            #if i == 10:
+             #   break
 
-        assert True == False
+        #assert True == False
 
         return y_hat
