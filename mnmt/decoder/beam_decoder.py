@@ -130,12 +130,11 @@ class BeamDecoder(BasicDecoder):
                 # => reshape(1, v) = [[1..., 2..., 3...]] of size (1, 3 * v),
                 # here beam = 3, trg-vocab-size = v
 
-                scores_t = scores_topk.t().expand(-1, self.trg_vocab_size)\
-                    .reshape(1, self.beam_size * self.trg_vocab_size)
+                scores_t = scores_topk.t().expand(-1, self.trg_vocab_size) \
+                    .reshape(1, self.beam_size * self.trg_vocab_size)  # scores from previous time-step
+                scores_t += y_hat_i_t_full
 
-                print(scores_t)
-
-                scores_topk, indices = torch.topk(y_hat_i_t_full + scores_t,
+                scores_topk, indices = torch.topk(scores_t,
                                                   dim=1, k=self.beam_size)  # [1, beam_size]
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
                 new_batch_nodes = []
@@ -151,7 +150,7 @@ class BeamDecoder(BasicDecoder):
                         s_n = s_i_t_full[:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]
                     y_hat_path = prev_node.y_hat_path
                     y_hat_path[t, :] = \
-                        y_hat_i_t_full[:, prev_node_ind*self.trg_vocab_size: (prev_node_ind + 1)*self.trg_vocab_size]
+                        y_hat_i_t_full[:, prev_node_ind * self.trg_vocab_size: (prev_node_ind + 1) * self.trg_vocab_size]
 
                     # if y_hat_n == self.eos_idx:
                     #     new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
@@ -159,7 +158,7 @@ class BeamDecoder(BasicDecoder):
                     #                                     log_prob_path=prev_node.log_prob_path,
                     #                                     pre_node=prev_node,
                     #                                     y_hat_path=y_hat_path))
-                    #else:
+                    # else:
                     new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
                                                     s_n=s_n,
                                                     log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
