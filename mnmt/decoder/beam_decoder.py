@@ -4,13 +4,11 @@ import torch
 
 
 class BeamNode:
-    def __init__(self, y_hat_n, log_prob_path, s_n, pre_node, y_hat_path, seen_eos):
+    def __init__(self, y_hat_n, log_prob_path, s_n, pre_node):
         self.y_hat_n = y_hat_n
         self.log_prob_path = log_prob_path
         self.s_n = s_n
         self.pre_node = pre_node
-        self.y_hat_path = y_hat_path
-        self.seen_eos = seen_eos
 
 
 class BeamDecoder(BasicDecoder):
@@ -80,10 +78,12 @@ class BeamDecoder(BasicDecoder):
                 s_i_t = s_t[i].unsqueeze(0)  # [1, hidden_dim]
 
             encoder_outputs_i = encoder_outputs[:, i, :].unsqueeze(1)  # [src_length, 1, encoder_hidden_dim * 2]
-            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_path=[0], s_n=s_i_t, pre_node=None,
-                                 y_hat_path=y_hat[:, i, :].unsqueeze(1), seen_eos=False)
-            #  y_hat_path = [trg_length, 1, trg_vocab_size]
-            batch_nodes = [root_node] * self.beam_size
+            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_path=[0], s_n=s_i_t, pre_node=None)
+            beam_nodes = [root_node] * self.beam_size
+            output_nodes = []
+
+            # init beam size, drop 1 whenever a beam meets <eos>
+            K = self.beam_size
 
             # scores for stored beams
             # scores_topk = torch.zeros(1, self.beam_size).to(self.device)
@@ -95,15 +95,15 @@ class BeamDecoder(BasicDecoder):
                 # we use the same subscript t for y and s here because y starts from 1, s starts from 0
 
                 # explore beam-size * vocab-size possibilities
-                y_hat_i_t_full = torch.zeros(1, self.trg_vocab_size * self.beam_size).to(self.device)
+                y_hat_i_t_full = torch.zeros(1, self.trg_vocab_size * K).to(self.device)
                 if isinstance(s_i_t, tuple):
-                    s_i_t_full = (torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device),
-                                  torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device))
+                    s_i_t_full = (torch.zeros(1, self.hidden_dim * K).to(self.device),
+                                  torch.zeros(1, self.hidden_dim * K).to(self.device))
                 else:
-                    s_i_t_full = torch.zeros(1, self.hidden_dim * self.beam_size).to(self.device)
+                    s_i_t_full = torch.zeros(1, self.hidden_dim * K).to(self.device)
 
-                for j in range(len(batch_nodes)):
-                    node = batch_nodes[j]
+                for j in range(len(beam_nodes)):
+                    node = beam_nodes[j]
                     y_hat_i_t_j, s_i_t_j, _ = self.feed_forward_decoder(node.y_hat_n, node.s_n,
                                                                         encoder_outputs_i, mask[i])
                     # partition a vocab-size range to the current y_hat_i_t_j and s_i_t_j
@@ -128,63 +128,48 @@ class BeamDecoder(BasicDecoder):
                 # => reshape(1, v) = [[1..., 2..., 3...]] of size (1, 3 * v),
                 # here beam = 3, trg-vocab-size = v
 
-                # scores_t = scores_topk.t().expand(-1, self.trg_vocab_size) \
-                #    .reshape(1, self.beam_size * self.trg_vocab_size)  # scores from previous time-step
+                scores_t = scores_topk.t().expand(-1, self.trg_vocab_size) \
+                    .reshape(1, K * self.trg_vocab_size)  # scores from previous time-step
 
-                scores_topk, indices = torch.topk(y_hat_i_t_full,
-                                                  dim=1, k=self.beam_size)  # [1, beam_size]
-                print(scores_topk)
+                scores_topk, indices = torch.topk(y_hat_i_t_full + scores_t,
+                                                  dim=1, k=K)  # [1, beam_size]
+
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
 
                 if t == 1:
                     assert prev_node_inds == [0] * self.beam_size
 
-                new_batch_nodes = []
+                new_beam_nodes = []
 
-                for k in range(self.beam_size):
+                for k in range(K):
                     y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  # fix the index, torch.Size([1])
                     prev_node_ind = prev_node_inds[k]
-                    prev_node = batch_nodes[prev_node_ind]
+                    prev_node = beam_nodes[prev_node_ind]
                     if isinstance(s_i_t_full, tuple):
                         s_n = (s_i_t_full[0][:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim],
                                s_i_t_full[1][:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim])
                     else:
                         s_n = s_i_t_full[:, prev_node_ind * self.hidden_dim: (prev_node_ind + 1) * self.hidden_dim]
-                    y_hat_path = prev_node.y_hat_path
-                    y_hat_path[t, :] = \
-                        y_hat_i_t_full[:, prev_node_ind * self.trg_vocab_size: (prev_node_ind + 1) * self.trg_vocab_size]
 
                     if y_hat_n == self.eos_idx:
-                        if not prev_node.seen_eos:
-                            new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
-                                                            s_n=s_n,
-                                                            log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
-                                                            pre_node=prev_node,
-                                                            y_hat_path=y_hat_path,
-                                                            seen_eos=True))
-                        else:
-                            new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
-                                                            s_n=s_n,
-                                                            log_prob_path=prev_node.log_prob_path,
-                                                            pre_node=prev_node,
-                                                            y_hat_path=y_hat_path,
-                                                            seen_eos=True))
+                        output_nodes.append(BeamNode(y_hat_n=y_hat_n,
+                                                     s_n=s_n,
+                                                     log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
+                                                     pre_node=prev_node))
                     else:
-                        new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
-                                                        s_n=s_n,
-                                                        log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
-                                                        pre_node=prev_node,
-                                                        y_hat_path=y_hat_path,
-                                                        seen_eos=False))
-                batch_nodes = new_batch_nodes
+                        new_beam_nodes.append(BeamNode(y_hat_n=y_hat_n,
+                                                       s_n=s_n,
+                                                       log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
+                                                       pre_node=prev_node))
+                beam_nodes = new_beam_nodes
 
             # backtrace
             max_log_prob = -float('inf')
             end_node = None
             max_ind = 0
             n = 0
-            for node in batch_nodes:
-                normalised_log_prob_n = sum(node.log_prob_path) / ((len(node.log_prob_path) - 1) ** 0.7)
+            for node in beam_nodes:
+                normalised_log_prob_n = sum(node.log_prob_path) / (len(node.log_prob_path) ** 0.7)
                 # print("-----------")
                 # print(node.log_prob_path)
                 if normalised_log_prob_n > max_log_prob:
@@ -192,8 +177,6 @@ class BeamDecoder(BasicDecoder):
                     max_log_prob = normalised_log_prob_n
                     max_ind = n
                 n += 1
-
-            y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
             # print("Maximum index is {}".format(max_ind))
 
             t = trg.size(0) - 1
