@@ -81,6 +81,7 @@ class BeamDecoder(BasicDecoder):
             root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_path=[0], s_n=s_i_t, pre_node=None)
             beam_nodes = [root_node] * self.beam_size
             output_nodes = []
+            scores_topk = torch.zeros(1, self.beam_size).to(self.device)
 
             # init beam size, drop 1 whenever a beam meets <eos>
             K = self.beam_size
