@@ -136,6 +136,7 @@ class BeamDecoder(BasicDecoder):
 
                 scores_topk, indices = torch.topk(scores_t + y_hat_i_t_full,
                                                   dim=1, k=self.beam_size)  # [1, beam_size]
+                print(scores_topk)
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
 
                 if t == 1:
@@ -179,6 +180,9 @@ class BeamDecoder(BasicDecoder):
                                                         y_hat_path=y_hat_path,
                                                         seen_eos=False))
                 batch_nodes = new_batch_nodes
+                break
+
+            assert True == False
 
             # backtrace
             max_log_prob = -float('inf')
