@@ -354,16 +354,16 @@ class Trainer:
 
                 if self.task == 'Multi':
                     trg_aux, trg_lens_aux = getattr(batch, self.args_feeder.auxiliary_name)
-                    output, output_aux = self.model(src, src_lens, trg, trg_aux)
+                    output, pred, output_aux, pred_aux = self.model(src, src_lens, trg, trg_aux)
                     loss = self.compute_loss((output, output_aux), (trg, trg_aux))
-                    correct_aux += self.translator.translate(output_aux, trg_aux, trg_field=self.auxiliary_field)
+                    correct_aux += self.translator.translate(pred_aux, trg_aux, trg_field=self.auxiliary_field)
                 else:
-                    output = self.model(src, src_lens, trg)
+                    output, pred = self.model(src, src_lens, trg)
                     loss = self.compute_loss(output, trg)
                 epoch_loss += loss.item()
 
                 # compute acc through seq2seq translation
-                correct += self.translator.translate(output, trg, trg_field=self.trg_field, output_file=output_file)
+                correct += self.translator.translate(pred, trg, trg_field=self.trg_field, output_file=output_file)
 
             epoch_loss = epoch_loss / len(iterator)
 

@@ -28,33 +28,6 @@ class BeamDecoder(BasicDecoder):
         self.turn_on_beam = turn_on_beam
         self.eos_idx = self.feed_forward_decoder.trg_eos_idx
 
-    def training_forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
-        """
-        Args:
-            trg: [trg_length, batch_size], target samples batch
-            encoder_outputs: [src_length, batch_size, encoder_hidden_dim * 2]
-            encoder_final_state: [batch_size, encoder_hidden_dim * 2]
-            mask: [batch_size, src_length], mask out <pad> for attention
-            teacher_forcing_ratio: probability of applying teacher forcing or not
-        """
-        y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
-        s_t = self.init_s_0(encoder_final_state)
-        y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
-
-        for t in range(1, trg.size(0)):
-            # start from 1 as the first column are zeros that represent <sos>
-            # each time using current y_t, attention, and previous s_{t-1}
-            # to compute s_t and predict y_{t+1}_hat
-            # we use the same subscript t for y and s here because y starts from 1, s starts from 0
-            y_hat_t, s_t, _ = self.feed_forward_decoder(y_hat_t, s_t, encoder_outputs, mask)
-            y_hat[t] = y_hat_t
-            # greedy strategy as only top1 prediction considered
-            teacher_force = random.random() < teacher_forcing_ratio
-            y_hat_t = trg[t] if teacher_force else y_hat_t.argmax(1)
-            assert y_hat_t.size() == trg[t].size()
-
-        return y_hat
-
     def forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
         """
         Args:
@@ -64,13 +37,37 @@ class BeamDecoder(BasicDecoder):
             mask: [batch_size, src_length], mask out <pad> for attention
             teacher_forcing_ratio: probability of applying teacher forcing or not
         """
-        if not self.turn_on_beam:
-            return self.training_forward(trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio)
+        batch_size = trg.shape[1]
+        y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
+        s_t = self.init_s_0(encoder_final_state)
+        y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
+        decoded_batch = torch.zeros(batch_size, trg.size(0)).to(self.device)
+
+        for t in range(1, trg.size(0)):
+            # start from 1 as the first column are zeros that represent <sos>
+            # each time using current y_t, attention, and previous s_{t-1}
+            # to compute s_t and predict y_{t+1}_hat
+            # we use the same subscript t for y and s here because y starts from 1, s starts from 0
+            y_hat_t, s_t, _ = self.feed_forward_decoder(y_hat_t, s_t, encoder_outputs, mask)
+            y_hat[t] = y_hat_t  # log-prob
+            # greedy strategy as only top1 prediction considered
+            teacher_force = random.random() < teacher_forcing_ratio
+            y_hat_t = trg[t] if teacher_force else y_hat_t.argmax(1)  # log-prob => index
+            decoded_batch[:, t] = y_hat_t
+            assert y_hat_t.size() == trg[t].size()
+
+        if self.turn_on_beam:
+            decoded_batch = self.beam_decode(trg, encoder_outputs, encoder_final_state, mask)
+
+        return y_hat, decoded_batch
+
+    def beam_decode(self, trg, encoder_outputs, encoder_final_state, mask):
 
         batch_size = trg.shape[1]
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
+        decoded_batch = torch.zeros(batch_size, trg.size(0)).to(self.device)
 
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
@@ -89,7 +86,7 @@ class BeamDecoder(BasicDecoder):
             batch_nodes = [root_node] * self.beam_size
 
             # scores for stored beams
-            scores_topk = torch.zeros(1, self.beam_size).to(self.device)
+            # scores_topk = torch.zeros(1, self.beam_size).to(self.device)
 
             for t in range(1, trg.size(0)):
                 # start from 1 as the first column are zeros that represent <sos>
@@ -131,16 +128,16 @@ class BeamDecoder(BasicDecoder):
                 # => reshape(1, v) = [[1..., 2..., 3...]] of size (1, 3 * v),
                 # here beam = 3, trg-vocab-size = v
 
-                scores_t = scores_topk.t().expand(-1, self.trg_vocab_size) \
-                    .reshape(1, self.beam_size * self.trg_vocab_size)  # scores from previous time-step
+                # scores_t = scores_topk.t().expand(-1, self.trg_vocab_size) \
+                #    .reshape(1, self.beam_size * self.trg_vocab_size)  # scores from previous time-step
 
-                scores_topk, indices = torch.topk(scores_t + y_hat_i_t_full,
+                scores_topk, indices = torch.topk(y_hat_i_t_full,
                                                   dim=1, k=self.beam_size)  # [1, beam_size]
                 print(scores_topk)
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
 
                 if t == 1:
-                    assert prev_node_inds == [0]*self.beam_size
+                    assert prev_node_inds == [0] * self.beam_size
 
                 new_batch_nodes = []
 
@@ -187,7 +184,7 @@ class BeamDecoder(BasicDecoder):
             max_ind = 0
             n = 0
             for node in batch_nodes:
-                normalised_log_prob_n = node.log_prob_path[-1] / ((len(node.log_prob_path) - 1) ** 0.7)
+                normalised_log_prob_n = sum(node.log_prob_path) / ((len(node.log_prob_path) - 1) ** 0.7)
                 print("-----------")
                 print(node.log_prob_path)
                 if normalised_log_prob_n > max_log_prob:
@@ -199,9 +196,9 @@ class BeamDecoder(BasicDecoder):
             y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
             print("Maximum index is {}".format(max_ind))
 
-            #if i == 10:
-             #   break
+            t = trg.size(0) - 1
+            while end_node is not None:
+                decoded_batch[i, t] = end_node.y_hat_n
+                end_node = end_node.pre_node
 
-        #assert True == False
-
-        return y_hat
+        return decoded_batch
