@@ -117,13 +117,13 @@ class BeamDecoder(BasicDecoder):
                         s_i_t_full[:, j * self.hidden_dim: (j + 1) * self.hidden_dim] = s_i_t_j
 
                 # avoid repeating for time-step 1
-                # if t == 1:
-                #     # mask out all but the first beam (expanded from <sos>)
-                #     inds_except_first_beam = range(self.trg_vocab_size, self.trg_vocab_size * self.beam_size)
-                #     if self.beam_size > 1:
-                #         y_hat_i_t_full.index_fill_(dim=1,
-                #                                    index=torch.tensor(inds_except_first_beam).to(self.device),
-                #                                    value=-float("Inf"))
+                if t == 1:
+                    # mask out all but the first beam (expanded from <sos>)
+                    inds_except_first_beam = range(self.trg_vocab_size, self.trg_vocab_size * self.beam_size)
+                    if self.beam_size > 1:
+                        y_hat_i_t_full.index_fill_(dim=1,
+                                                   index=torch.tensor(inds_except_first_beam).to(self.device),
+                                                   value=-float("Inf"))
 
                 # Example to explain the following expansion
                 # a = [[1, 2, 3]] => a.t() = [[1], [2], [3]] => a.expand(-1, v) = [[1]*v, [2]*v, [3]*v]
@@ -137,9 +137,8 @@ class BeamDecoder(BasicDecoder):
                                                   dim=1, k=self.beam_size)  # [1, beam_size]
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
 
-                # avoid repeating for time-step 1
                 if t == 1:
-                    prev_node_inds = [0] * self.beam_size
+                    assert prev_node_inds == [0]*self.beam_size
 
                 new_batch_nodes = []
 
