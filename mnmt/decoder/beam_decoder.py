@@ -132,7 +132,6 @@ class BeamDecoder(BasicDecoder):
 
                 scores_t = scores_topk.t().expand(-1, self.trg_vocab_size) \
                     .reshape(1, self.beam_size * self.trg_vocab_size)  # scores from previous time-step
-                # scores_t += y_hat_i_t_full.clone()
 
                 scores_topk, indices = torch.topk(scores_t + y_hat_i_t_full,
                                                   dim=1, k=self.beam_size)  # [1, beam_size]
