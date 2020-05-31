@@ -4,9 +4,9 @@ import torch
 
 
 class BeamNode:
-    def __init__(self, y_hat_n, log_prob_n, s_n, pre_node, y_hat_path):
+    def __init__(self, y_hat_n, log_prob_path, s_n, pre_node, y_hat_path):
         self.y_hat_n = y_hat_n
-        self.log_prob_n = log_prob_n
+        self.log_prob_path = log_prob_path
         self.s_n = s_n
         self.pre_node = pre_node
         self.y_hat_path = y_hat_path
@@ -82,10 +82,13 @@ class BeamDecoder(BasicDecoder):
                 s_i_t = s_t[i].unsqueeze(0)  # [1, hidden_dim]
 
             encoder_outputs_i = encoder_outputs[:, i, :].unsqueeze(1)  # [src_length, 1, encoder_hidden_dim * 2]
-            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_n=[0], s_n=s_i_t, pre_node=None,
+            root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_path=[0], s_n=s_i_t, pre_node=None,
                                  y_hat_path=y_hat[:, i, :].unsqueeze(1))
             #  y_hat_path = [trg_length, 1, trg_vocab_size]
             batch_nodes = [root_node] * self.beam_size
+
+            # scores for stored beams
+            scores_topk = torch.zeros(1, self.beam_size).to(self.device)
 
             for t in range(1, trg.size(0)):
                 # start from 1 as the first column are zeros that represent <sos>
@@ -116,13 +119,20 @@ class BeamDecoder(BasicDecoder):
                 # avoid repeating for time-step 1
                 if t == 1:
                     # mask out all but the first beam (expanded from <sos>)
-                    first_beam_inds = range(self.trg_vocab_size, self.trg_vocab_size * self.beam_size)
+                    inds_except_first_beam = range(self.trg_vocab_size, self.trg_vocab_size * self.beam_size)
                     if self.beam_size > 1:
                         y_hat_i_t_full.index_fill_(dim=1,
-                                                   index=torch.tensor(first_beam_inds).to(self.device),
+                                                   index=torch.tensor(inds_except_first_beam).to(self.device),
                                                    value=-float("Inf"))
 
-                y_hat_i_t_topk, indices = torch.topk(y_hat_i_t_full, dim=1, k=self.beam_size)  # [1, beam_size]
+                # Example to explain the following expansion
+                # a = [[1, 2, 3]] => a.t() = [[1], [2], [3]] => a.expand(-1, v) = [[1]*v, [2]*v, [3]*v]
+                # => reshape(1, v) = [[1..., 2..., 3...]] of size (1, 3 * v),
+                # here beam = 3, trg-vocab-size = v
+
+                scores_t = scores_topk.t().expand(-1, self.trg_vocab_size).reshape(1, self.beam_size * self.trg_vocab_size)
+                scores_topk, indices = torch.topk(y_hat_i_t_full + scores_t,
+                                                  dim=1, k=self.beam_size)  # [1, beam_size]
                 prev_node_inds = [ind // self.trg_vocab_size for ind in indices[0]]  # know which node belongs to
                 new_batch_nodes = []
 
@@ -142,16 +152,17 @@ class BeamDecoder(BasicDecoder):
                     if y_hat_n == self.eos_idx:
                         new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
                                                         s_n=s_n,
-                                                        log_prob_n=prev_node.log_prob_n,
+                                                        log_prob_path=prev_node.log_prob_path,
                                                         pre_node=prev_node,
                                                         y_hat_path=y_hat_path))
                     else:
                         new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
                                                         s_n=s_n,
-                                                        log_prob_n=prev_node.log_prob_n + [y_hat_i_t_topk[0, k]],
+                                                        log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
                                                         pre_node=prev_node,
                                                         y_hat_path=y_hat_path))
                 batch_nodes = new_batch_nodes
+                print(scores_topk)
 
             # backtrace
             max_log_prob = -float('inf')
@@ -159,7 +170,7 @@ class BeamDecoder(BasicDecoder):
             # max_ind = 0
             n = 0
             for node in batch_nodes:
-                normalised_log_prob_n = sum(node.log_prob_n) / (len(node.log_prob_n) ** 0.7)
+                normalised_log_prob_n = node.log_prob_path[-1] / (len(node.log_prob_path) ** 0.7)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
