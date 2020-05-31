@@ -163,7 +163,7 @@ class BeamDecoder(BasicDecoder):
             n = 0
             for node in batch_nodes:
                 normalised_log_prob_n = sum(node.log_prob_n) / (node.length ** 0.7)
-                print(len(node.log_prob_n, node.length))
+                print(len(node.log_prob_n), node.length)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
