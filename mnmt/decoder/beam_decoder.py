@@ -191,7 +191,6 @@ class BeamDecoder(BasicDecoder):
                 end_node = end_node.pre_node
                 count += 1
                 t += -1
-            assert count == trg.size(0)
 
-        # print(decoded_batch)
+        print(decoded_batch)
         return decoded_batch
