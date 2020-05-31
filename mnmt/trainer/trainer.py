@@ -338,12 +338,14 @@ class Trainer:
         iterator = self.valid_iter if not is_test else self.test_iter
 
         if self.turn_on_beam:
-            print("Start beam (size={}) searching ...".format(self.args_feeder.beam_size))
             if self.task == "Multi":
                 for de in self.model.decoder_list:
                     de.turn_on_beam = True
+                    beam_size = de.beam_size
             else:
                 self.model.decoder.turn_on_beam = True  # turn on beam search during evaluation
+                beam_size = self.model.decoder.beam_size
+            print("Start beam (size={}) searching ...".format(beam_size))
 
         with torch.no_grad():
 
