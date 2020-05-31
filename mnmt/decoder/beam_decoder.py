@@ -162,6 +162,7 @@ class BeamDecoder(BasicDecoder):
                                                        log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
                                                        pre_node=prev_node))
                 beam_nodes = new_beam_nodes
+                K = len(beam_nodes)
 
             # backtrace
             max_log_prob = -float('inf')
