@@ -185,8 +185,8 @@ class BeamDecoder(BasicDecoder):
             n = 0
             for node in batch_nodes:
                 normalised_log_prob_n = sum(node.log_prob_path) / ((len(node.log_prob_path) - 1) ** 0.7)
-                print("-----------")
-                print(node.log_prob_path)
+                # print("-----------")
+                # print(node.log_prob_path)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
@@ -194,7 +194,7 @@ class BeamDecoder(BasicDecoder):
                 n += 1
 
             y_hat[:, i, :] = end_node.y_hat_path.squeeze(1)
-            print("Maximum index is {}".format(max_ind))
+            # print("Maximum index is {}".format(max_ind))
 
             t = trg.size(0) - 1
             count = 0
@@ -204,4 +204,5 @@ class BeamDecoder(BasicDecoder):
                 count += 1
             assert count == trg.size(0)
 
+        print(decoded_batch)
         return decoded_batch
