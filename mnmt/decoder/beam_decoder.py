@@ -172,7 +172,7 @@ class BeamDecoder(BasicDecoder):
             end_node = None
             n = 0
             for node in output_nodes:
-                normalised_log_prob_n = sum(node.log_prob_path) / (len(node.log_prob_path) ** 0.7)
+                normalised_log_prob_n = node.log_prob_path[-1] / (len(node.log_prob_path) ** 0.7)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
