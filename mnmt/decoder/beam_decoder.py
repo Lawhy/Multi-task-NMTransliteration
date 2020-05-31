@@ -56,8 +56,8 @@ class BeamDecoder(BasicDecoder):
             decoded_batch[:, t] = y_hat_t
             assert y_hat_t.size() == trg[t].size()
 
-        if self.turn_on_beam:
-            decoded_batch = self.beam_decode(trg, encoder_outputs, encoder_final_state, mask)
+        #if self.turn_on_beam:
+        #    decoded_batch = self.beam_decode(trg, encoder_outputs, encoder_final_state, mask)
 
         return y_hat, decoded_batch
 
