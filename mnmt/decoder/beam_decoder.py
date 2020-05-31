@@ -56,8 +56,8 @@ class BeamDecoder(BasicDecoder):
             decoded_batch[:, t] = y_hat_t
             assert y_hat_t.size() == trg[t].size()
 
-        #if self.turn_on_beam:
-        #    decoded_batch = self.beam_decode(trg, encoder_outputs, encoder_final_state, mask)
+        if self.turn_on_beam:
+            decoded_batch = self.beam_decode(trg, encoder_outputs, encoder_final_state, mask)
 
         return y_hat, decoded_batch
 
@@ -197,8 +197,11 @@ class BeamDecoder(BasicDecoder):
             print("Maximum index is {}".format(max_ind))
 
             t = trg.size(0) - 1
+            count = 0
             while end_node is not None:
-                decoded_batch[i, t] = end_node.y_hat_n
+                decoded_batch[i, t] = end_node.y_hat_n[0]
                 end_node = end_node.pre_node
+                count += 1
+            assert count == trg.size(0)
 
         return decoded_batch
