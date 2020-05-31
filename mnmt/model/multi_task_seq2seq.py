@@ -20,4 +20,5 @@ class Seq2MultiSeq(nn.Module):
         mask = create_mask(src, self.args_feeder.src_pad_idx)
         predictions = [self.decoder_list[i](trg[i], encoder_outputs, encoder_final_state, mask,
                                             self.teacher_forcing_ratio) for i in range(len(self.decoder_list))]
+        # output1, pred1, output2, pred2 ...
         return tuple(predictions)
