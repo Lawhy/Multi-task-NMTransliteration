@@ -59,7 +59,7 @@ class BeamDecoder(BasicDecoder):
 
         return y_hat, decoded_batch
 
-    def beam_decode(self, trg, encoder_outputs, encoder_final_state, mask):
+    def beam_decode(self, trg, encoder_outputs, encoder_final_state, mask, bias=True):
 
         batch_size = trg.shape[1]
         s_t = self.init_s_0(encoder_final_state)
@@ -172,7 +172,11 @@ class BeamDecoder(BasicDecoder):
             end_node = None
             n = 0
             for node in output_nodes:
-                normalised_log_prob_n = node.log_prob_path[-1] / (len(node.log_prob_path) ** 0.7)
+                if bias:
+                    # biased to earlier tokens
+                    normalised_log_prob_n = sum(node.log_prob_path) / (len(node.log_prob_path) ** 0.7)
+                else:
+                    normalised_log_prob_n = node.log_prob_path[-1] / (len(node.log_prob_path) ** 0.7)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
