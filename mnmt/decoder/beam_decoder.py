@@ -81,13 +81,12 @@ class BeamDecoder(BasicDecoder):
             root_node = BeamNode(y_hat_n=y_hat_i_t, log_prob_path=[0], s_n=s_i_t, pre_node=None)
             beam_nodes = [root_node] * self.beam_size
             output_nodes = []
-            scores_topk = torch.zeros(1, self.beam_size).to(self.device)
 
             # init beam size, drop 1 whenever a beam meets <eos>
             K = self.beam_size
 
             # scores for stored beams
-            # scores_topk = torch.zeros(1, self.beam_size).to(self.device)
+            scores_topk = torch.zeros(1, self.beam_size).to(self.device)
 
             for t in range(1, trg.size(0)):
                 # start from 1 as the first column are zeros that represent <sos>
@@ -141,6 +140,7 @@ class BeamDecoder(BasicDecoder):
                     assert prev_node_inds == [0] * self.beam_size
 
                 new_beam_nodes = []
+                kept_beam_inds = []
 
                 for k in range(K):
                     y_hat_n = (indices[0, k] % self.trg_vocab_size).unsqueeze(0)  # fix the index, torch.Size([1])
@@ -158,11 +158,13 @@ class BeamDecoder(BasicDecoder):
                                                      log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
                                                      pre_node=prev_node))
                     else:
+                        kept_beam_inds.append(k)
                         new_beam_nodes.append(BeamNode(y_hat_n=y_hat_n,
                                                        s_n=s_n,
                                                        log_prob_path=prev_node.log_prob_path + [scores_topk[:, k]],
                                                        pre_node=prev_node))
                 beam_nodes = new_beam_nodes
+                scores_topk = scores_topk.index_select(dim=1, index=torch.tensor(kept_beam_inds).to(self.device))
                 K = len(beam_nodes)
 
             # backtrace
