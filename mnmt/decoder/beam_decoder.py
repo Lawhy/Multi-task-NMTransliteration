@@ -41,7 +41,7 @@ class BeamDecoder(BasicDecoder):
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
-        decoded_batch = torch.zeros(batch_size, trg.size(0)).to(self.device)
+        decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
 
         for t in range(1, trg.size(0)):
             # start from 1 as the first column are zeros that represent <sos>
@@ -67,7 +67,7 @@ class BeamDecoder(BasicDecoder):
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
-        decoded_batch = torch.zeros(batch_size, trg.size(0)).to(self.device)
+        decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
 
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
