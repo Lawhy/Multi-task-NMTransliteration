@@ -173,7 +173,7 @@ class BeamDecoder(BasicDecoder):
             end_node = None
             max_ind = 0
             n = 0
-            for node in beam_nodes:
+            for node in output_nodes:
                 normalised_log_prob_n = sum(node.log_prob_path) / (len(node.log_prob_path) ** 0.7)
                 # print("-----------")
                 # print(node.log_prob_path)
