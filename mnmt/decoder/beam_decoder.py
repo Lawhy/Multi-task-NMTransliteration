@@ -4,13 +4,12 @@ import torch
 
 
 class BeamNode:
-    def __init__(self, y_hat_n, log_prob_n, s_n, pre_node, y_hat_path, length):
+    def __init__(self, y_hat_n, log_prob_n, s_n, pre_node, y_hat_path):
         self.y_hat_n = y_hat_n
         self.log_prob_n = log_prob_n
         self.s_n = s_n
         self.pre_node = pre_node
         self.y_hat_path = y_hat_path
-        self.length = length
 
 
 class BeamDecoder(BasicDecoder):
@@ -145,15 +144,13 @@ class BeamDecoder(BasicDecoder):
                                                         s_n=s_n,
                                                         log_prob_n=prev_node.log_prob_n,
                                                         pre_node=prev_node,
-                                                        y_hat_path=y_hat_path,
-                                                        length=prev_node.length))
+                                                        y_hat_path=y_hat_path))
                     else:
                         new_batch_nodes.append(BeamNode(y_hat_n=y_hat_n,
                                                         s_n=s_n,
                                                         log_prob_n=prev_node.log_prob_n + [y_hat_i_t_topk[0, k]],
                                                         pre_node=prev_node,
-                                                        y_hat_path=y_hat_path,
-                                                        length=t))
+                                                        y_hat_path=y_hat_path))
                 batch_nodes = new_batch_nodes
 
             # backtrace
@@ -162,8 +159,7 @@ class BeamDecoder(BasicDecoder):
             # max_ind = 0
             n = 0
             for node in batch_nodes:
-                normalised_log_prob_n = sum(node.log_prob_n) / (node.length ** 0.7)
-                print(len(node.log_prob_n), node.length)
+                normalised_log_prob_n = sum(node.log_prob_n) / (len(node.log_prob_n) ** 0.7)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
