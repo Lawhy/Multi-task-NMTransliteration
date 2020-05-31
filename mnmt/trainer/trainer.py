@@ -455,7 +455,9 @@ class Trainer:
         if enable_acc_act:
             act = AlternatingCharacterTable(act_path=dict_act_path)
             valid_out = act.tsv_to_df(self.args_feeder.valid_out_path)
+            print(valid_out)
             test_out = act.tsv_to_df(self.args_feeder.test_out_path)
+            print(test_out)
             results_valid = act.compute_ACC_ACT(valid_out)
             results_test = act.compute_ACC_ACT(test_out)
             eval_results["ACC-ACT"] = [results_valid["acc-act"], results_test["acc-act"]]
