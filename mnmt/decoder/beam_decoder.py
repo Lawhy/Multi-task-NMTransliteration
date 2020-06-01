@@ -14,7 +14,7 @@ class BeamNode:
 class BeamDecoder(BasicDecoder):
 
     def __init__(self, feed_forward_decoder, bridge_layer, device, beam_size,
-                 turn_on_beam=False, bias=True, length_norm_ratio=0.7):
+                 turn_on_beam=False, score_choice="bias", length_norm_ratio=0.7):
         """
         Args:
             feed_forward_decoder:
@@ -26,7 +26,7 @@ class BeamDecoder(BasicDecoder):
         self.hidden_dim = self.feed_forward_decoder.attrs.hidden_dim
         self.turn_on_beam = turn_on_beam
         self.eos_idx = self.feed_forward_decoder.trg_eos_idx
-        self.bias = bias
+        self.score_choice = score_choice
         self.length_norm_ratio = length_norm_ratio
 
     def forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
@@ -174,14 +174,24 @@ class BeamDecoder(BasicDecoder):
             max_log_prob = -float('inf')
             end_node = None
             n = 0
+            # B for biased score, N for normal score, O for openNMT's implementation
             for node in output_nodes:
-                if self.bias:
-                    # print("Compute biased score ...")
+                if self.score_choice == "B":
                     # biased to earlier tokens N*score_1 + (N-1)*score_2 + ... 1*score_N
                     normalised_log_prob_n = sum(node.log_prob_path) / (len(node.log_prob_path) ** self.length_norm_ratio)
-                else:
-                    # print("Compute normal scores ...")
+                elif self.score_choice == "N":
                     normalised_log_prob_n = node.log_prob_path[-1] / (len(node.log_prob_path) ** self.length_norm_ratio)
+                elif self.score_choice == "O+B":
+                    denominator = ((5 + len(node.log_prob_path)) ** self.length_norm_ratio) / \
+                                  ((5 + 1) ** self.length_norm_ratio)
+                    normalised_log_prob_n = sum(node.log_prob_path) / denominator
+                elif self.score_choice == "O+N":
+                    denominator = ((5 + len(node.log_prob_path)) ** self.length_norm_ratio) / \
+                                  ((5 + 1) ** self.length_norm_ratio)
+                    normalised_log_prob_n = node.log_prob_path[-1] / denominator
+                else:
+                    normalised_log_prob_n = 0
+                    print("No such scoring choice!")
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
                     max_log_prob = normalised_log_prob_n
