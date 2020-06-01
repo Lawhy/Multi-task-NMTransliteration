@@ -23,4 +23,3 @@ class Seq2SeqTranslator(BasicTranslator):
         return self.matching(pred, ref, trg_field=trg_field,
                              quiet_translate=self.quiet_translate,
                              output_file=output_file)
-

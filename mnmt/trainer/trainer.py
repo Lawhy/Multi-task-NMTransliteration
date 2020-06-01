@@ -390,18 +390,21 @@ class Trainer:
         self.model.load_state_dict(torch.load('experiments/exp' +
                                               str(self.args_feeder.exp_num) + '/acc-model-seq2seq.pt'))
 
-    def best_model_output(self, enable_acc_act=True, test_ref_dict=None, beam_size=1, bias=True):
+    def best_model_output(self, enable_acc_act=True, test_ref_dict=None, beam_size=1, bias=True, length_norm_ratio=0.7):
 
         self.load_best_model()
         if self.task == "Multi":
             for de in self.model.decoder_list:
                 de.beam_size = beam_size
                 de.bias = bias
+                de.length_norm_ratio = length_norm_ratio
         else:
             self.model.decoder.beam_size = beam_size
             self.model.decoder.bias = bias
+            self.model.decoder.length_norm_ratio = length_norm_ratio
         self.turn_on_beam = True
         log_print(self.train_log_path, "Biased scoring: {}".format(bias))
+        log_print(self.train_log_path, "Length normalisation ratio: {}".format(length_norm_ratio))
 
         # evaluate val set
         f = open(self.args_feeder.valid_out_path, 'w')
