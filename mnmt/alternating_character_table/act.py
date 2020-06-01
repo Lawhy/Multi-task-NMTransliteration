@@ -29,7 +29,6 @@ class AlternatingCharacterTable:
 
     def compute_ACC_ACT(self, df):
         # calculate MED
-        print(df)
         dist = df.apply(lambda x: distance(str(x['PRED']), str(x['REF'])), axis=1)
 
         # zero MED means correct
