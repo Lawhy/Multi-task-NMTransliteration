@@ -174,11 +174,11 @@ class BeamDecoder(BasicDecoder):
             n = 0
             for node in output_nodes:
                 if self.bias:
-                    print("Compute biased score ...")
+                    # print("Compute biased score ...")
                     # biased to earlier tokens N*score_1 + (N-1)*score_2 + ... 1*score_N
                     normalised_log_prob_n = sum(node.log_prob_path) / (len(node.log_prob_path) ** 0.7)
                 else:
-                    print("Compute normal scores ...")
+                    # print("Compute normal scores ...")
                     normalised_log_prob_n = node.log_prob_path[-1] / (len(node.log_prob_path) ** 0.7)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node

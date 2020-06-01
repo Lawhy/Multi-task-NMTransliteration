@@ -345,7 +345,7 @@ class Trainer:
             else:
                 self.model.decoder.turn_on_beam = True  # turn on beam search during evaluation
                 beam_size = self.model.decoder.beam_size
-            print("Start beam (size={}) searching ...".format(beam_size))
+            log_print(self.train_log_path, "Start beam (size={}) searching ...".format(beam_size))
 
         with torch.no_grad():
 
