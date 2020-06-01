@@ -13,7 +13,7 @@ class BeamNode:
 
 class BeamDecoder(BasicDecoder):
 
-    def __init__(self, feed_forward_decoder, bridge_layer, device, beam_size, turn_on_beam=False):
+    def __init__(self, feed_forward_decoder, bridge_layer, device, beam_size, turn_on_beam=False, bias=True):
         """
         Args:
             feed_forward_decoder:
@@ -25,6 +25,7 @@ class BeamDecoder(BasicDecoder):
         self.hidden_dim = self.feed_forward_decoder.attrs.hidden_dim
         self.turn_on_beam = turn_on_beam
         self.eos_idx = self.feed_forward_decoder.trg_eos_idx
+        self.bias = bias
 
     def forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
         """
@@ -59,7 +60,7 @@ class BeamDecoder(BasicDecoder):
 
         return y_hat, decoded_batch
 
-    def beam_decode(self, trg, encoder_outputs, encoder_final_state, mask, bias=True):
+    def beam_decode(self, trg, encoder_outputs, encoder_final_state, mask):
 
         batch_size = trg.shape[1]
         s_t = self.init_s_0(encoder_final_state)
@@ -172,10 +173,12 @@ class BeamDecoder(BasicDecoder):
             end_node = None
             n = 0
             for node in output_nodes:
-                if bias:
+                if self.bias:
+                    print("Compute biased score ...")
                     # biased to earlier tokens N*score_1 + (N-1)*score_2 + ... 1*score_N
                     normalised_log_prob_n = sum(node.log_prob_path) / (len(node.log_prob_path) ** 0.7)
                 else:
+                    print("Compute normal scores ...")
                     normalised_log_prob_n = node.log_prob_path[-1] / (len(node.log_prob_path) ** 0.7)
                 if normalised_log_prob_n > max_log_prob:
                     end_node = node
