@@ -196,5 +196,4 @@ class BeamDecoder(BasicDecoder):
             for t in range(len(path), T):
                 decoded_batch[i, t] = self.eos_idx
 
-        print(decoded_batch)
         return decoded_batch
