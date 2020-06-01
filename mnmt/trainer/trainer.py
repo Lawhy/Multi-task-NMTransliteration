@@ -401,6 +401,7 @@ class Trainer:
             self.model.decoder.beam_size = beam_size
             self.model.decoder.bias = bias
         self.turn_on_beam = True
+        log_print(self.train_log_path, "Biased scoring: {}".format(bias))
 
         # evaluate val set
         f = open(self.args_feeder.valid_out_path, 'w')
