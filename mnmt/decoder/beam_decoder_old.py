@@ -143,7 +143,7 @@ class BeamDecoderOld(BasicDecoder):
                                                     stored_predecessors, stored_emitted_symbols,
                                                     stored_scores, batch_size, self.hidden_dim, trg.size(0))
 
-        print(p)
+        print(p.shape)
         # Build return objects
         for t in range(1, y_hat.shape[0]):
             y_hat[t] = output[t-1][:, 0, :]
