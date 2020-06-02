@@ -14,7 +14,8 @@ class BeamNode:
 class BeamDecoder(BasicDecoder):
 
     def __init__(self, feed_forward_decoder, bridge_layer, device, beam_size,
-                 turn_on_beam=False, score_choice="bias", length_norm_ratio=0.7):
+                 turn_on_beam=False, score_choice="bias", length_norm_ratio=0.7,
+                 right_to_left=False):
         """
         Args:
             feed_forward_decoder:
@@ -28,6 +29,7 @@ class BeamDecoder(BasicDecoder):
         self.eos_idx = self.feed_forward_decoder.trg_eos_idx
         self.score_choice = score_choice
         self.length_norm_ratio = length_norm_ratio
+        self.right_to_left = right_to_left
 
     def forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
         """
@@ -43,6 +45,20 @@ class BeamDecoder(BasicDecoder):
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
         decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
+
+        if self.right_to_left:
+            for i in range(batch_size):
+                start = 1
+                end = 0
+                for t in range(trg.size(0)):
+                    token_idx = trg[t, i]
+                    if token_idx == self.eos_idx:
+                        end = token_idx
+                        break
+                print(trg[:, i])
+                trg[start: end, i] = trg[start: end, i].flip(dims=0)
+                print(trg[:, i])
+        assert True == False
 
         for t in range(1, trg.size(0)):
             # start from 1 as the first column are zeros that represent <sos>
