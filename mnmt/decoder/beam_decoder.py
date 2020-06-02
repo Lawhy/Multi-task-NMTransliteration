@@ -58,7 +58,6 @@ class BeamDecoder(BasicDecoder):
                         break
                 trg[start: end, i] = trg[start: end, i].flip(dims=[0])
                 trg_range[i, :] = torch.tensor([start, end], dtype=torch.int32).to(self.device)
-        assert True == False
 
         for t in range(1, trg.size(0)):
             # start from 1 as the first column are zeros that represent <sos>
