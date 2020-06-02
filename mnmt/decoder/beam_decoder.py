@@ -45,6 +45,7 @@ class BeamDecoder(BasicDecoder):
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
         decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
+        trg_range = torch.zeros([batch_size, 2], dtype=torch.int32).to(self.device)
 
         if self.right_to_left:
             for i in range(batch_size):
@@ -55,11 +56,9 @@ class BeamDecoder(BasicDecoder):
                     if token_idx == self.eos_idx:
                         end = t
                         break
-                print(trg[:, i], trg[start: end, i])
-                revers_idx = list(range(start, end)).reverse()
                 trg[start: end, i] = trg[start: end, i].flip(dims=[0])
-                print(trg[:, i])
-                print("---------")
+                trg_range[i, :] = torch.tensor([start, end], dtype=torch.int32).to(self.device)
+                print(trg_range)
         assert True == False
 
         for t in range(1, trg.size(0)):
