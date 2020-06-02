@@ -143,12 +143,16 @@ class BeamDecoderOld(BasicDecoder):
                                                     stored_predecessors, stored_emitted_symbols,
                                                     stored_scores, batch_size, self.hidden_dim, trg.size(0))
 
-        print(p.shape)
         # Build return objects
         for t in range(1, y_hat.shape[0]):
             y_hat[t] = output[t-1][:, 0, :]
 
-        return y_hat, p[:, 0, :]
+        decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
+        for t in range(1, trg.size(0)):
+            decoded_batch[:, t] = p[t-1][:, 0, :]
+        print(decoded_batch)
+
+        return y_hat, decoded_batch
 
     def _backtrack(self, nw_output, nw_hidden, predecessors, symbols, scores, b, hidden_size, max_length):
         """Backtracks over batch to generate optimal k-sequences.
