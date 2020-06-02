@@ -58,7 +58,6 @@ class BeamDecoder(BasicDecoder):
                         break
                 trg[start: end, i] = trg[start: end, i].flip(dims=[0])
                 trg_range[i, :] = torch.tensor([start, end], dtype=torch.int32).to(self.device)
-                print(trg_range)
         assert True == False
 
         for t in range(1, trg.size(0)):
@@ -76,6 +75,12 @@ class BeamDecoder(BasicDecoder):
 
         if self.turn_on_beam:
             decoded_batch = self.beam_decode(trg, encoder_outputs, encoder_final_state, mask)
+
+        if self.right_to_left:
+            for i in range(batch_size):
+                start, end = trg_range[i, :][0], trg_range[i, :][1]
+                y_hat[start: end, i, :] = y_hat[start: end, i, :].flip(dims=[0])
+                decoded_batch[i, start: end] = decoded_batch[i, end: start].flip(dims=[0])
 
         return y_hat, decoded_batch
 
