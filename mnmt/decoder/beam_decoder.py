@@ -79,9 +79,7 @@ class BeamDecoder(BasicDecoder):
             for i in range(batch_size):
                 start, end = trg_range[i, :][0], trg_range[i, :][1]
                 y_hat[start: end, i, :] = y_hat[start: end, i, :].flip(dims=[0])
-                print(decoded_batch[i, start: end])
-                print(decoded_batch[i, end: start].flip(dims=[0]))
-                decoded_batch[i, start: end] = decoded_batch[i, end: start].flip(dims=[0])
+                decoded_batch[i, start: end] = decoded_batch[i, start: end].flip(dims=[0])
 
         return y_hat, decoded_batch
 
