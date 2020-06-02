@@ -272,10 +272,10 @@ class Trainer:
 
             if self.task == 'Multi':
                 trg_aux, trg_lens_aux = getattr(batch, self.args_feeder.auxiliary_name)
-                output, output_aux = self.model(src, src_lens, trg, trg_aux)
+                output, pred, output_aux, pred_aux = self.model(src, src_lens, trg, trg_aux)
                 loss = self.compute_loss((output, output_aux), (trg, trg_aux))
             else:
-                output = self.model(src, src_lens, trg)
+                output, pred = self.model(src, src_lens, trg)
                 loss = self.compute_loss(output, trg)
 
             loss.backward()
