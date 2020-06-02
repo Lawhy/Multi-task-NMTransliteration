@@ -55,9 +55,10 @@ class BeamDecoder(BasicDecoder):
                     if token_idx == self.eos_idx:
                         end = token_idx
                         break
-                print(trg[:, i])
+                print(trg[:, i], trg[start: end, i])
                 trg[start: end, i] = trg[start: end, i].flip(dims=[0])
                 print(trg[:, i])
+                print("---------")
         assert True == False
 
         for t in range(1, trg.size(0)):
