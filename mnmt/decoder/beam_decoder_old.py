@@ -148,8 +148,8 @@ class BeamDecoderOld(BasicDecoder):
             y_hat[t] = output[t-1][:, 0, :]
 
         decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
-        print(len(p), trg.size(0))
         for t in range(1, trg.size(0)):
+            print(decoded_batch[:, t].shape, p[t-1].shape)
             decoded_batch[:, t] = p[t-1][:, 0]
         print(decoded_batch)
 
