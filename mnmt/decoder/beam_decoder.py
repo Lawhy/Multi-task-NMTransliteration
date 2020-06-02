@@ -49,14 +49,15 @@ class BeamDecoder(BasicDecoder):
         if self.right_to_left:
             for i in range(batch_size):
                 start = 1
-                end = 0
+                end = -1
                 for t in range(trg.size(0)):
                     token_idx = trg[t, i]
                     if token_idx == self.eos_idx:
                         end = token_idx
                         break
                 print(trg[:, i], trg[start: end, i])
-                trg[start: end, i] = trg[start: end, i].flip(dims=[0])
+                revers_idx = list(range(start, end)).reverse()
+                trg[start: end, i] = trg[:, i].index_select(revers_idx, dim=0)
                 print(trg[:, i])
                 print("---------")
         assert True == False
