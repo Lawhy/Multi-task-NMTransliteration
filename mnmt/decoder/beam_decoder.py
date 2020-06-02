@@ -47,11 +47,13 @@ class BeamDecoder(BasicDecoder):
         decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
 
         if self.right_to_left:
+            print(self.eos_idx)
             for i in range(batch_size):
                 start = 1
                 end = -1
                 for t in range(trg.size(0)):
                     token_idx = trg[t, i]
+                    print(token_idx)
                     if token_idx == self.eos_idx:
                         end = token_idx
                         break
