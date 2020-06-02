@@ -56,7 +56,7 @@ class BeamDecoder(BasicDecoder):
                         end = token_idx
                         break
                 print(trg[:, i])
-                trg[start: end, i] = trg[start: end, i].flip(dims=0)
+                trg[start: end, i] = trg[start: end, i].flip(dims=[0])
                 print(trg[:, i])
         assert True == False
 
