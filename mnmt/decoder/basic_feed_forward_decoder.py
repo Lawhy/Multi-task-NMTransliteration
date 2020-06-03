@@ -49,7 +49,7 @@ class BasicFeedForwardDecoder(nn.Module):
 
         if isinstance(s_t_minus_1, tuple):  # LSTM
             scores, context = self.attention(s_t_minus_1[0], encoder_outputs, mask)
-            s_0, c_0 = s_t_minus_1[0].unsqueeze(0).repeat(2, 1, 1), s_t_minus_1[1].unsqueeze(0).repeat(2, 1, 1)
+            s_0, c_0 = s_t_minus_1[0].unsqueeze(0).repeat(self.attrs.num_layers, 1, 1), s_t_minus_1[1].unsqueeze(0).repeat(self.attrs.num_layers, 1, 1)
             rnn_output, (s_t, c_t) = self.rnn(torch.cat((y_t, context), dim=2), (s_0, c_0))
             c_t = c_t[-1]  # [batch_size, hidden_dim]
         else:  # GRU
