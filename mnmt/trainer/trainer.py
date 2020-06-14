@@ -229,7 +229,7 @@ class Trainer:
         return output, trg
 
     def construct_loss_function(self):
-        loss_criterion = nn.CrossEntropyLoss(ignore_index=self.args_feeder.trg_pad_idx)
+        loss_criterion = nn.NLLLoss(ignore_index=self.args_feeder.trg_pad_idx)
         if self.task == "Multi":
             return lambda output, output_aux, trg, trg_aux: \
                 (self.multi_task_ratio * loss_criterion(output, trg)) + \
