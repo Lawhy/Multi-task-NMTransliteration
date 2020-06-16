@@ -23,13 +23,8 @@ class BasicDecoder(nn.Module):
         """
         return self.bridge_layer(encoder_final_state)  # [batch_size, hidden_dim]
 
-    def init_decoder_outputs(self, trg):
-        """
-        Args:
-            trg:  [trg_length, batch_size], target samples batch
-        """
-        trg_len, batch_size = trg.size()
-        init_outputs = torch.zeros(trg_len, batch_size, self.trg_vocab_size).to(self.device)
+    def init_decoder_outputs(self, max_length, batch_size):
+        init_outputs = torch.zeros(max_length, batch_size, self.trg_vocab_size).to(self.device)
         return init_outputs
 
     def forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):

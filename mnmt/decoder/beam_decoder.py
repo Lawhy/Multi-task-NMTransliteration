@@ -42,7 +42,7 @@ class BeamDecoder(BasicDecoder):
         """
         MAX_LENGTH = self.MAX_LENGTH if self.MAX_LENGTH is not None else trg.size(0)
         batch_size = trg.shape[1]
-        y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
+        y_hat = self.init_decoder_outputs(MAX_LENGTH, batch_size)  # [trg_length, batch_size, trg_vocab_size]
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
         decoded_batch = torch.zeros([batch_size, MAX_LENGTH], dtype=torch.int32).to(self.device)
