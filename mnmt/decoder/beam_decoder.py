@@ -15,7 +15,7 @@ class BeamDecoder(BasicDecoder):
 
     def __init__(self, feed_forward_decoder, bridge_layer, device, beam_size,
                  turn_on_beam=False, score_choice="bias", length_norm_ratio=0.7,
-                 right_to_left=False):
+                 max_length=None):
         """
         Args:
             feed_forward_decoder:
@@ -29,7 +29,7 @@ class BeamDecoder(BasicDecoder):
         self.eos_idx = self.feed_forward_decoder.trg_eos_idx
         self.score_choice = score_choice
         self.length_norm_ratio = length_norm_ratio
-        self.right_to_left = right_to_left
+        self.MAX_LENGTH = max_length
 
     def forward(self, trg, encoder_outputs, encoder_final_state, mask, teacher_forcing_ratio):
         """
@@ -40,13 +40,14 @@ class BeamDecoder(BasicDecoder):
             mask: [batch_size, src_length], mask out <pad> for attention
             teacher_forcing_ratio: probability of applying teacher forcing or not
         """
+        MAX_LENGTH = self.MAX_LENGTH if self.MAX_LENGTH is not None else trg.size(0)
         batch_size = trg.shape[1]
         y_hat = self.init_decoder_outputs(trg)  # [trg_length, batch_size, trg_vocab_size (input_dim)]
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
-        decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
+        decoded_batch = torch.zeros([batch_size, MAX_LENGTH], dtype=torch.int32).to(self.device)
 
-        for t in range(1, trg.size(0)):
+        for t in range(1, MAX_LENGTH):
             # start from 1 as the first column are zeros that represent <sos>
             # each time using current y_t, attention, and previous s_{t-1}
             # to compute s_t and predict y_{t+1}_hat
@@ -66,10 +67,11 @@ class BeamDecoder(BasicDecoder):
 
     def beam_decode(self, trg, encoder_outputs, encoder_final_state, mask):
 
+        MAX_LENGTH = self.MAX_LENGTH if self.MAX_LENGTH is not None else trg.size(0)
         batch_size = trg.shape[1]
         s_t = self.init_s_0(encoder_final_state)
         y_hat_t = trg[0, :]  # first input to the decoder is the <sos> tokens
-        decoded_batch = torch.zeros([batch_size, trg.size(0)], dtype=torch.int32).to(self.device)
+        decoded_batch = torch.zeros([batch_size, MAX_LENGTH], dtype=torch.int32).to(self.device)
 
         # decode each sample in the batch
         # indexing: i for batch, t for time-step, j for node
@@ -92,7 +94,7 @@ class BeamDecoder(BasicDecoder):
             # scores for stored beams
             scores_topk = torch.zeros(1, self.beam_size).to(self.device)
 
-            for t in range(1, trg.size(0)):
+            for t in range(1, MAX_LENGTH):
                 # start from 1 as the first column are zeros that represent <sos>
                 # each time using current y_t, attention, and previous s_{t-1}
                 # to compute s_t and predict y_{t+1}_hat
@@ -199,7 +201,7 @@ class BeamDecoder(BasicDecoder):
                     max_log_prob = normalised_log_prob_n
                 n += 1
 
-            T = trg.size(0)
+            T = MAX_LENGTH
             path = []
             while end_node is not None:
                 path.append(end_node)
