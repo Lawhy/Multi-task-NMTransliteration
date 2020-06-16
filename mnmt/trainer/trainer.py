@@ -327,7 +327,7 @@ class Trainer:
 
         return epoch_loss / len(self.train_iter)
 
-    def evaluate(self, is_test=False, output_file=None):
+    def evaluate(self, is_test=False, output_file=None, trans_only=False):
 
         self.model.eval()
         self.model.teacher_forcing_ratio = 0  # turn off teacher forcing
@@ -357,11 +357,11 @@ class Trainer:
                 if self.task == 'Multi':
                     trg_aux, trg_lens_aux = getattr(batch, self.args_feeder.auxiliary_name)
                     output, pred, output_aux, pred_aux = self.model(src, src_lens, trg, trg_aux)
-                    loss = self.compute_loss((output, output_aux), (trg, trg_aux))
+                    loss = self.compute_loss((output, output_aux), (trg, trg_aux)) if not trans_only else float("Inf")
                     correct_aux += self.translator.translate(pred_aux, trg_aux, trg_field=self.auxiliary_field)
                 else:
                     output, pred = self.model(src, src_lens, trg)
-                    loss = self.compute_loss(output, trg)
+                    loss = self.compute_loss(output, trg) if not trans_only else float("Inf")
                 epoch_loss += loss.item()
 
                 # compute acc through seq2seq translation
@@ -469,3 +469,31 @@ class Trainer:
             eval_results["Replaced"] = [results_valid["replaced"], results_test["replaced"]]
         log_print(self.train_log_path, eval_results)
         eval_results.to_csv("experiments/exp" + str(self.args_feeder.exp_num) + "/eval.results", sep="\t")
+
+    def translate_only(self, beam_size=1, score_choice="N", length_norm_ratio=0.7, output_file=None):
+
+        self.load_best_model()
+        if self.task == "Multi":
+            for de in self.model.decoder_list:
+                de.beam_size = beam_size
+                de.score_choice = score_choice
+                de.length_norm_ratio = length_norm_ratio
+        else:
+            self.model.decoder.beam_size = beam_size
+            self.model.decoder.score_choice = score_choice
+            self.model.decoder.length_norm_ratio = length_norm_ratio
+        self.turn_on_beam = True
+        log_print(self.train_log_path, "Scoring Method: {}".format(score_choice))
+        log_print(self.train_log_path, "Length normalisation ratio: {}".format(length_norm_ratio))
+
+        # evaluate val set
+        f = open(self.args_feeder.valid_out_path, 'w')
+        f.write("PRED\tREF\n")
+        valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False, output_file=f)
+        f.close()
+
+        # evaluate tst set
+        f = open(self.args_feeder.test_out_path, 'w')
+        f.write("PRED\tREF\n")
+        test_loss, test_acc, test_acc_aux = self.evaluate(is_test=True, output_file=f)
+        f.close()
