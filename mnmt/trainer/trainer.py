@@ -500,3 +500,17 @@ class Trainer:
             f.write("PRED\tREF\n")
             self.evaluate(is_test=True, output_file=f, trans_only=True)
             f.close()
+            f = open(self.args_feeder.test_out_path + '.src', 'w')
+            for i, batch in enumerate(self.test_iter):
+                src, src_lens = getattr(batch, self.args_feeder.src_lang)
+                src = src[1:].permute(1, 0)
+                for j in range(src.shape[0]):
+                    src_j = src[j, :]
+                    src_j_toks = []
+                    for t in src_j:
+                        tok = self.src_field.vocab.itos[t]
+                        if tok == '<eos>':
+                            break
+                        else:
+                            src_j_toks.append(tok)
+                    f.write(''.join(src_j_toks) + "\n")
