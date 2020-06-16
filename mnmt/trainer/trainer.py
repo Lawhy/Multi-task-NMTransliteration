@@ -362,7 +362,7 @@ class Trainer:
                 else:
                     output, pred = self.model(src, src_lens, trg)
                     loss = self.compute_loss(output, trg) if not trans_only else float("Inf")
-                epoch_loss += loss.item()
+                epoch_loss += loss.item() if not trans_only else float("Inf")
 
                 # compute acc through seq2seq translation
                 correct += self.translator.translate(pred, trg, trg_field=self.trg_field, output_file=output_file)
