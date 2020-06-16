@@ -470,7 +470,7 @@ class Trainer:
         log_print(self.train_log_path, eval_results)
         eval_results.to_csv("experiments/exp" + str(self.args_feeder.exp_num) + "/eval.results", sep="\t")
 
-    def translate_only(self, beam_size=1, score_choice="N", length_norm_ratio=0.7, output_file=None):
+    def translate_only(self, beam_size=1, score_choice="N", length_norm_ratio=0.7, is_test=False, max_length=None):
 
         self.load_best_model()
         if self.task == "Multi":
@@ -478,22 +478,25 @@ class Trainer:
                 de.beam_size = beam_size
                 de.score_choice = score_choice
                 de.length_norm_ratio = length_norm_ratio
+                de.max_length = max_length
         else:
             self.model.decoder.beam_size = beam_size
             self.model.decoder.score_choice = score_choice
             self.model.decoder.length_norm_ratio = length_norm_ratio
+            self.model.decoder.max_length = max_length
         self.turn_on_beam = True
         log_print(self.train_log_path, "Scoring Method: {}".format(score_choice))
         log_print(self.train_log_path, "Length normalisation ratio: {}".format(length_norm_ratio))
 
         # evaluate val set
-        f = open(self.args_feeder.valid_out_path, 'w')
-        f.write("PRED\tREF\n")
-        valid_loss, valid_acc, valid_acc_aux = self.evaluate(is_test=False, output_file=f)
-        f.close()
-
-        # evaluate tst set
-        f = open(self.args_feeder.test_out_path, 'w')
-        f.write("PRED\tREF\n")
-        test_loss, test_acc, test_acc_aux = self.evaluate(is_test=True, output_file=f)
-        f.close()
+        if not is_test:
+            f = open(self.args_feeder.valid_out_path, 'w')
+            f.write("PRED\tREF\n")
+            self.evaluate(is_test=False, output_file=f, trans_only=True)
+            f.close()
+        else:
+            # evaluate tst set
+            f = open(self.args_feeder.test_out_path, 'w')
+            f.write("PRED\tREF\n")
+            self.evaluate(is_test=True, output_file=f, trans_only=True)
+            f.close()
