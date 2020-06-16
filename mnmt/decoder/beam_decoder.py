@@ -58,7 +58,6 @@ class BeamDecoder(BasicDecoder):
             teacher_force = random.random() < teacher_forcing_ratio
             y_hat_t = trg[t] if teacher_force else y_hat_t.argmax(1)  # log-prob => index
             decoded_batch[:, t] = y_hat_t
-            assert y_hat_t.size() == trg[t].size()
 
         if self.turn_on_beam and self.beam_size > 1:
             decoded_batch = self.beam_decode(trg, encoder_outputs, encoder_final_state, mask)
