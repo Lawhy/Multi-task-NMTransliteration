@@ -82,7 +82,7 @@ def test_seq2seq(args_feeder):
 
 if __name__ == '__main__':
     set_reproducibility(seed=1234)
-    mtrs = [8 / 9, 5 / 6, 2 / 3, 1 / 2, 1 / 4, 1 / 6]
+    mtrs = [8/9, 5/6, 2/3, 1/2, 1/4, 1/6]
     aux_lang = "pinyin_str"
     mtrs.reverse()
     try:
