@@ -1,5 +1,5 @@
 # Multi-task-NMT
-The Pytorch-based implementation of the Multi-task Neural Machine Transliteration system initially built for the undegraduate thesis at University of Edinburgh.
+The Pytorch-based implementation of the Multi-task Neural Machine Transliteration system.
 
 ------------
 1. Requirements
