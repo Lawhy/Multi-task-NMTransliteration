@@ -1,4 +1,0 @@
-,ACC-dev,ACC-test,ACC+(test),ACC-ACT-test,ACC-Pinyin-test
-"seq2seq (Baseline, mtr=1)",0.6647173489278753,0.7240000000000001,0.733,0.742,-1
-"seq2seq (Pinyin-baseline, mtr=0)",-1.0,-1.0,-1.0,-1.0,0.736
-mtr=0.4,0.6861598440545809,0.73,0.738,0.746,0.7440000000000001
