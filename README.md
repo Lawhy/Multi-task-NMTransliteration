@@ -13,3 +13,7 @@ pandas>=1.0.3
 ```
 pip install multi-nmt-lawhy
 ```
+3. Example Training Script
+```
+python Seq2MultiSeq.py
+```
