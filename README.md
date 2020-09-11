@@ -23,7 +23,7 @@ The datasets in `.tsv` format are available at `mnmt/datasets`.
 
 ## Model
 The essential components of our model are implemented individually and the code is available in the directory `mnmt`,
-e.g. the encoder is available at `mnmt/encoder/basic_encoder.py`. See below for quick access of our model:
+e.g. the encoder is available at `mnmt/encoder/basic_encoder.py`. See below for the quick access of our model:
 
 1. Requirements
 ```
