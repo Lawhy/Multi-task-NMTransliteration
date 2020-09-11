@@ -21,7 +21,6 @@ This paper involves two English-to-Chinese transliteration datasets:
   
 The datasets in `.tsv` format are available at `mnmt/datasets`.
 
-------------
 ## Model
 1. Requirements
 ```
