@@ -12,6 +12,16 @@ Citation:
 ```
 
 ------------
+## Datasets
+This paper involves two English-to-Chinese transliteration datasets: 
+
+   - NEWS dataset, originally taken from [NEWS 2018](http://workshop.colips.org/news2018/dataset.html);
+
+   - DICT dataset, a new dataset we released.
+  
+The datasets in `.tsv` format are available at `mnmt/datasets`.
+
+------------
 1. Requirements
 ```
 torchtext>=0.5.0
@@ -26,13 +36,7 @@ pip install multi-nmt-lawhy
 OR simply clone this git repository.
 
 3. Datasets
-This paper involves two English-to-Chinese transliteration datasets: 
 
-   - NEWS dataset, originally taken from [NEWS 2018](http://workshop.colips.org/news2018/dataset.html);
-
-   - DICT dataset, a new dataset we released.
-  
-The datasets in `.tsv` format are available at `mnmt/datasets`.
 
 3. Example Training Script
 ```
