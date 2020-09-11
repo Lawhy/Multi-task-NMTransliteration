@@ -1,7 +1,7 @@
 # English-to-Chinese Transliteration with a Phonetic Auxiliary Task
 
-This repository contains the Pytorch-based implementation of the Multi-task Neural Machine Transliteration system submitted to the 
-[AACL-IJCNLP 2020](http://aacl2020.org/), as described in Yuan He and Shay B. Cohen: *[English-to-Chinese Transliteration with a Phonetic Auxiliary Task](http://???)*, AACL-IJCNLP, 2020.
+This repository contains the Pytorch-based implementation of the Multi-task Neural Machine Transliteration system submitted to
+[The 1st Conference of the Asia-Pacific Chapter of the Association for Computational Linguistics and the 10th International Joint Conference on Natural Language Processing](http://aacl2020.org/). It can be accessed in Yuan He and Shay B. Cohen: *[English-to-Chinese Transliteration with a Phonetic Auxiliary Task](http://???)*, AACL-IJCNLP, 2020.
 
 
 Citation:
