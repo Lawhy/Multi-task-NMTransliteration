@@ -22,6 +22,7 @@ This paper involves two English-to-Chinese transliteration datasets:
 The datasets in `.tsv` format are available at `mnmt/datasets`.
 
 ------------
+## Model
 1. Requirements
 ```
 torchtext>=0.5.0
@@ -35,10 +36,7 @@ pip install multi-nmt-lawhy
 ```
 OR simply clone this git repository.
 
-3. Datasets
-
-
-3. Example Training Script
+3. Training Script that can reproduce the models 
 ```
 python Seq2MultiSeq.py
 ```
