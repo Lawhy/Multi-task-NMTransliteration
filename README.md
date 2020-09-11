@@ -36,7 +36,7 @@ pip install multi-nmt-lawhy
 ```
 OR simply clone this git repository.
 
-3. Training Script that can reproduce the models 
+3. Training Script
 ```
 python Seq2MultiSeq.py
 ```
